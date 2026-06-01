@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    margin: 0;
+  }
+  ::selection {
+    background: rgba(52, 199, 127, 0.28);
+  }
+  /* faint dot-grid backdrop */
+  .dotgrid {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -1px -1px;
+  }
+}
+
+@layer components {
+  /* mono uppercase micro-label */
+  .label {
+    @apply font-mono uppercase tracking-label text-faint;
+    font-size: 10px;
+  }
+  .label-sm {
+    @apply font-mono uppercase tracking-label text-faint;
+    font-size: 9px;
+  }
+  .hairline {
+    @apply border border-line;
+  }
+  /* corner-bracket frame */
+  .brackets::before,
+  .brackets::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: theme('colors.line2');
+    pointer-events: none;
+  }
+  .brackets::before {
+    top: 0;
+    left: 0;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+  .brackets::after {
+    bottom: 0;
+    right: 0;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+  }
+  /* underline input */
+  .field {
+    @apply w-full bg-transparent border-0 border-b border-line py-2.5 text-ink
+      placeholder:text-faint focus:outline-none focus:border-accent transition-colors;
+  }
+  /* boxed input (used in modals/forms where underline is too sparse) */
+  .field-box {
+    @apply w-full rounded-lg bg-surface2 border border-line px-3.5 py-2.5 text-ink
+      placeholder:text-faint focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/40 transition;
+  }
+  .btn-solid {
+    @apply inline-flex items-center justify-center gap-2 bg-accent text-bg font-mono uppercase
+      tracking-label text-[11px] px-6 py-3 rounded-lg hover:bg-[#42d98c] transition-colors
+      disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 border border-line text-ink font-mono
+      uppercase tracking-label text-[11px] px-5 py-2.5 rounded-lg hover:border-line2 hover:bg-surface2
+      transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 border border-down/40 text-down font-mono
+      uppercase tracking-label text-[11px] px-5 py-2.5 rounded-lg hover:bg-down/10 transition-colors
+      disabled:opacity-40;
+  }
+  .card {
+    @apply rounded-xl2 border border-line bg-surface;
+  }
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ebf1ed;
+  -webkit-box-shadow: 0 0 0 1000px #191e1a inset;
+  caret-color: #ebf1ed;
+}
+
+@keyframes pulsedot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.pulse {
+  animation: pulsedot 1.8s ease-in-out infinite;
+}
