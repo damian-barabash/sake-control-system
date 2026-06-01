@@ -1,0 +1,9 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vite
+
+# Личная папка пользователя — НЕ ТРОГАТЬ, не коммитить, не деплоить
+PROD/
+Prod/

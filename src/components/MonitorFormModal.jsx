@@ -58,19 +58,21 @@ export function MonitorFormModal({ open, onClose, projectId, monitor, onSaved })
       ssl_warn_days: num(form.ssl_warn_days) || 14,
       enabled: form.enabled,
     }
-    let res
-    if (editing) {
-      res = await supabase.from('monitors').update(payload).eq('id', monitor.id).select().single()
-    } else {
-      res = await supabase.from('monitors').insert(payload).select().single()
+    try {
+      const res = editing
+        ? await supabase.from('monitors').update(payload).eq('id', monitor.id).select().single()
+        : await supabase.from('monitors').insert(payload).select().single()
+      if (res.error) {
+        setError(res.error.message)
+        return
+      }
+      onSaved?.(res.data)
+      onClose()
+    } catch (e) {
+      setError(String(e?.message ?? e))
+    } finally {
+      setBusy(false)
     }
-    setBusy(false)
-    if (res.error) {
-      setError(res.error.message)
-      return
-    }
-    onSaved?.(res.data)
-    onClose()
   }
 
   const targetHint = form.type === 'tcp' || form.type === 'ping' ? t('monitorForm.targetHintTcp') : t('monitorForm.targetHintHttp')

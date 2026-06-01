@@ -30,23 +30,21 @@ export function ProjectFormModal({ open, onClose, project, onSaved }) {
       notify_emails: emails,
       alert_members: alertMembers,
     }
-    let res
-    if (editing) {
-      res = await supabase.from('projects').update(payload).eq('id', project.id).select().single()
-    } else {
-      res = await supabase
-        .from('projects')
-        .insert({ ...payload, created_by: user.id })
-        .select()
-        .single()
+    try {
+      const res = editing
+        ? await supabase.from('projects').update(payload).eq('id', project.id).select().single()
+        : await supabase.from('projects').insert({ ...payload, created_by: user.id }).select().single()
+      if (res.error) {
+        setError(res.error.message)
+        return
+      }
+      onSaved?.(res.data)
+      onClose()
+    } catch (e) {
+      setError(String(e?.message ?? e))
+    } finally {
+      setBusy(false)
     }
-    setBusy(false)
-    if (res.error) {
-      setError(res.error.message)
-      return
-    }
-    onSaved?.(res.data)
-    onClose()
   }
 
   return (
