@@ -43,7 +43,8 @@ function hostFromTarget(target: string): string {
 
 type Result = { status: 'up' | 'degraded' | 'down'; code: number | null; latency: number | null; error: string | null }
 
-async function httpCheck(m: any, keyword: boolean): Promise<Result> {
+async function httpCheck(m: any, opts: { keyword?: boolean; reachable?: boolean } = {}): Promise<Result> {
+  const { keyword, reachable } = opts
   const t0 = performance.now()
   try {
     const res = await raceTimeout(
@@ -52,7 +53,13 @@ async function httpCheck(m: any, keyword: boolean): Promise<Result> {
     )
     const latency = Math.round(performance.now() - t0)
     const code = res.status
-    let ok = m.expected_status ? code === m.expected_status : code >= 200 && code < 400
+    // reachable mode (Supabase): any gateway answer < 500 means the project is alive
+    // (401 "No API key" / 404 still prove the gateway responds). Down only on 5xx.
+    let ok = reachable
+      ? code < 500
+      : m.expected_status
+        ? code === m.expected_status
+        : code >= 200 && code < 400
     let error: string | null = ok ? null : `HTTP ${code}`
     if (keyword && m.keyword) {
       const body = await res.text()
@@ -91,12 +98,12 @@ async function runCheck(m: any): Promise<Result> {
   const host = hostFromTarget(m.target)
   switch (m.type) {
     case 'http':
-      return httpCheck(m, false)
+      return httpCheck(m, {})
     case 'keyword':
-      return httpCheck(m, true)
+      return httpCheck(m, { keyword: true })
     case 'supabase': {
       const base = m.target.replace(/\/+$/, '')
-      return httpCheck({ ...m, target: `${base}/auth/v1/health`, method: 'GET', expected_status: null }, false)
+      return httpCheck({ ...m, target: `${base}/auth/v1/health`, method: 'GET', expected_status: null }, { reachable: true })
     }
     case 'tcp':
       return tcpCheck(host, m.port || 443, timeout, false)

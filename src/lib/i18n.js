@@ -36,7 +36,7 @@ const DICT = {
       errInvalid: 'Неверный логин или пароль', errGeneric: 'Не удалось войти',
       hint: 'Доступ только по приглашению администратора',
     },
-    topbar: { lang: 'Язык', signout: 'Выйти', admin: 'admin', projects: 'Проекты', users: 'Пользователи' },
+    topbar: { lang: 'Язык', signout: 'Выйти', admin: 'admin', projects: 'Проекты', users: 'Пользователи', menu: 'Меню' },
     projects: {
       title: 'Проекты', refreshNote: 'проверка каждые 5 мин', empty: 'Пока нет проектов',
       emptyHint: 'Добавьте проект и привяжите к нему мониторы — сайт, базу, сервер.',
@@ -104,7 +104,7 @@ const DICT = {
       errInvalid: 'Błędny login lub hasło', errGeneric: 'Nie udało się zalogować',
       hint: 'Dostęp tylko na zaproszenie administratora',
     },
-    topbar: { lang: 'Język', signout: 'Wyloguj', admin: 'admin', projects: 'Projekty', users: 'Użytkownicy' },
+    topbar: { lang: 'Język', signout: 'Wyloguj', admin: 'admin', projects: 'Projekty', users: 'Użytkownicy', menu: 'Menu' },
     projects: {
       title: 'Projekty', refreshNote: 'sprawdzanie co 5 min', empty: 'Brak projektów',
       emptyHint: 'Dodaj projekt i przypisz monitory — stronę, bazę, serwer.',
@@ -172,7 +172,7 @@ const DICT = {
       errInvalid: 'Invalid login or password', errGeneric: 'Could not sign in',
       hint: 'Access by administrator invitation only',
     },
-    topbar: { lang: 'Language', signout: 'Sign out', admin: 'admin', projects: 'Projects', users: 'Users' },
+    topbar: { lang: 'Language', signout: 'Sign out', admin: 'admin', projects: 'Projects', users: 'Users', menu: 'Menu' },
     projects: {
       title: 'Projects', refreshNote: 'checked every 5 min', empty: 'No projects yet',
       emptyHint: 'Add a project and attach monitors — site, database, server.',
