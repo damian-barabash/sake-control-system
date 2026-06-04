@@ -27,22 +27,25 @@ function MonitorRow({ monitor, history, isAdmin, onEdit, onDelete, onReload }) {
     }, 1500)
   }
 
+  const canOpen = monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'ssl'
+
   return (
     <div className="card p-4 sm:p-5">
-      <div className="flex items-start gap-4">
-        <div className="pt-1.5">
+      {/* header: status + name + sparkline */}
+      <div className="flex items-start gap-3">
+        <div className="pt-1 shrink-0">
           <StatusDot status={status} pulse />
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h3 className="font-medium text-ink truncate">{monitor.name}</h3>
-            <span className="label">{t('enum.mtype.' + monitor.type)}</span>
-            {!monitor.enabled && <span className="label text-down">off</span>}
-            {monitor.executor === 'mac' && <span className="label text-accent">mac</span>}
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-medium text-ink truncate min-w-0">{monitor.name}</h3>
+            <span className="label shrink-0">{t('enum.mtype.' + monitor.type)}</span>
+            {!monitor.enabled && <span className="label text-down shrink-0">off</span>}
+            {monitor.executor === 'mac' && <span className="label text-accent shrink-0">mac</span>}
           </div>
           <a
-            href={monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'ssl' ? monitor.target : undefined}
+            href={canOpen ? monitor.target : undefined}
             target="_blank"
             rel="noreferrer"
             className="block text-[13px] text-faint mt-0.5 truncate hover:text-muted"
@@ -50,51 +53,61 @@ function MonitorRow({ monitor, history, isAdmin, onEdit, onDelete, onReload }) {
             {monitor.target}
             {monitor.port ? `:${monitor.port}` : ''}
           </a>
-
-          <div className="mt-3 flex items-center gap-x-6 gap-y-1.5 flex-wrap">
-            <Metric label={t('project.uptime')} value={formatUptime(st.uptime_24h)} />
-            <Metric label={t('project.latency')} value={formatLatency(st.last_latency_ms)} />
-            <Metric
-              label={t('project.lastCheck')}
-              value={st.last_checked_at ? timeAgo(st.last_checked_at) : t('project.never')}
-            />
-            {st.ssl_days_left != null && (
-              <Metric label="SSL" value={`${st.ssl_days_left} d`} warn={st.ssl_days_left <= (monitor.ssl_warn_days ?? 14)} />
-            )}
-          </div>
-          {st.last_error && status !== 'up' && (
-            <p className="mt-2 text-[12px] text-down/90 font-mono truncate">{st.last_error}</p>
-          )}
         </div>
 
-        <div className="flex flex-col items-end gap-3 shrink-0">
+        <div className="shrink-0 hidden xs:block">
           <Sparkline points={history} />
-          <div className="flex items-center gap-2">
-            <button
-              onClick={runNow}
-              disabled={checking}
-              className="font-mono uppercase tracking-label text-[9px] text-muted hover:text-ink border border-line rounded px-2 py-1 transition-colors disabled:opacity-50"
-            >
-              {checking ? t('project.checking') : t('project.runNow')}
-            </button>
-            {isAdmin && (
-              <>
-                <button
-                  onClick={() => onEdit(monitor)}
-                  className="font-mono uppercase tracking-label text-[9px] text-muted hover:text-ink border border-line rounded px-2 py-1 transition-colors"
-                >
-                  {t('common.edit')}
-                </button>
-                <button
-                  onClick={() => onDelete(monitor)}
-                  className="font-mono uppercase tracking-label text-[9px] text-down/80 hover:text-down border border-line rounded px-2 py-1 transition-colors"
-                >
-                  ✕
-                </button>
-              </>
-            )}
-          </div>
         </div>
+      </div>
+
+      {/* sparkline on the narrowest screens drops to its own full-width row */}
+      <div className="xs:hidden mt-3 flex justify-end">
+        <Sparkline points={history} width={160} />
+      </div>
+
+      {/* metrics */}
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:flex sm:flex-wrap sm:gap-x-7 sm:gap-y-2">
+        <Metric label={t('project.uptime')} value={formatUptime(st.uptime_24h)} />
+        <Metric label={t('project.latency')} value={formatLatency(st.last_latency_ms)} />
+        <Metric
+          label={t('project.lastCheck')}
+          value={st.last_checked_at ? timeAgo(st.last_checked_at) : t('project.never')}
+        />
+        {st.ssl_days_left != null && (
+          <Metric label="SSL" value={`${st.ssl_days_left} d`} warn={st.ssl_days_left <= (monitor.ssl_warn_days ?? 14)} />
+        )}
+      </div>
+
+      {st.last_error && status !== 'up' && (
+        <p className="mt-3 text-[12px] text-down/90 font-mono break-all">{st.last_error}</p>
+      )}
+
+      {/* actions */}
+      <div className="mt-4 pt-3.5 border-t border-line/60 flex items-center gap-2">
+        <button
+          onClick={runNow}
+          disabled={checking}
+          className="font-mono uppercase tracking-label text-[10px] text-muted hover:text-ink border border-line rounded-md px-3 py-2 transition-colors disabled:opacity-50 flex-1 sm:flex-none text-center"
+        >
+          {checking ? t('project.checking') : t('project.runNow')}
+        </button>
+        {isAdmin && (
+          <>
+            <button
+              onClick={() => onEdit(monitor)}
+              className="font-mono uppercase tracking-label text-[10px] text-muted hover:text-ink border border-line rounded-md px-3 py-2 transition-colors shrink-0"
+            >
+              {t('common.edit')}
+            </button>
+            <button
+              onClick={() => onDelete(monitor)}
+              aria-label="delete"
+              className="font-mono text-[12px] text-down/80 hover:text-down border border-line rounded-md px-3 py-2 transition-colors shrink-0"
+            >
+              ✕
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
