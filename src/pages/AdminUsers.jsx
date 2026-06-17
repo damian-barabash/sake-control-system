@@ -3,11 +3,14 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useT } from '../context/LangContext'
 import { TopBar } from '../components/TopBar'
-import { Modal, Field, Avatar, Spinner, EmptyState } from '../components/ui'
+import { Modal, Field, Avatar, Spinner } from '../components/ui'
 
-function CreateUserModal({ open, onClose, projects, onCreated }) {
+// Roles a moderator may grant. Admins always create clients ('member').
+const ASSIGNABLE = ['member', 'admin', 'moderator']
+
+function CreateUserModal({ open, onClose, projects, onCreated, isModerator }) {
   const { t } = useT()
-  const [form, setForm] = useState({ full_name: '', email: '', password: '' })
+  const [form, setForm] = useState({ full_name: '', email: '', password: '', role: 'member' })
   const [picked, setPicked] = useState(new Set())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -21,6 +24,9 @@ function CreateUserModal({ open, onClose, projects, onCreated }) {
     })
   }
 
+  // Project assignment only matters for clients; staff see projects by ownership/role.
+  const showProjects = form.role === 'member'
+
   async function submit(e) {
     e.preventDefault()
     if (busy) return
@@ -32,7 +38,8 @@ function CreateUserModal({ open, onClose, projects, onCreated }) {
         email: form.email.trim(),
         password: form.password,
         full_name: form.full_name.trim() || null,
-        project_ids: [...picked],
+        role: isModerator ? form.role : 'member',
+        project_ids: showProjects ? [...picked] : [],
       },
     })
     setBusy(false)
@@ -56,30 +63,55 @@ function CreateUserModal({ open, onClose, projects, onCreated }) {
         <Field label={t('admin.password')}>
           <input className="field-box" value={form.password} onChange={(e) => set('password', e.target.value)} required minLength={6} />
         </Field>
-        <div>
-          <span className="label block mb-2">{t('admin.assign')}</span>
-          {projects.length === 0 ? (
-            <p className="text-sm text-faint">{t('common.none')}</p>
-          ) : (
+
+        {isModerator && (
+          <Field label={t('admin.role')} hint={t('admin.roleHint')}>
             <div className="flex flex-wrap gap-2">
-              {projects.map((p) => {
-                const on = picked.has(p.id)
+              {ASSIGNABLE.map((r) => {
+                const on = form.role === r
                 return (
                   <button
-                    key={p.id}
+                    key={r}
                     type="button"
-                    onClick={() => toggle(p.id)}
+                    onClick={() => set('role', r)}
                     className={`rounded-lg border px-3 py-1.5 text-[13px] transition-colors ${
                       on ? 'border-accent/50 bg-accentSoft text-ink' : 'border-line text-muted hover:text-ink'
                     }`}
                   >
-                    {p.name}
+                    {t('admin.roles.' + r)}
                   </button>
                 )
               })}
             </div>
-          )}
-        </div>
+          </Field>
+        )}
+
+        {showProjects && (
+          <div>
+            <span className="label block mb-2">{t('admin.assign')}</span>
+            {projects.length === 0 ? (
+              <p className="text-sm text-faint">{t('common.none')}</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {projects.map((p) => {
+                  const on = picked.has(p.id)
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => toggle(p.id)}
+                      className={`rounded-lg border px-3 py-1.5 text-[13px] transition-colors ${
+                        on ? 'border-accent/50 bg-accentSoft text-ink' : 'border-line text-muted hover:text-ink'
+                      }`}
+                    >
+                      {p.name}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {error && <p className="text-down text-sm">{error}</p>}
 
@@ -97,7 +129,7 @@ function CreateUserModal({ open, onClose, projects, onCreated }) {
 }
 
 export default function AdminUsers() {
-  const { user } = useAuth()
+  const { user, isModerator } = useAuth()
   const { t } = useT()
   const [users, setUsers] = useState([])
   const [projects, setProjects] = useState([])
@@ -125,16 +157,25 @@ export default function AdminUsers() {
     load()
   }, [load])
 
+  // Whom can the current staff member act on? Moderator: everyone but self.
+  // Admin: only clients (members) — the Edge Function re-checks ownership.
+  function canManageUser(u) {
+    if (u.id === user.id) return false
+    return isModerator || u.role === 'member'
+  }
+
   async function removeUser(u) {
     if (!confirm(t('admin.deleteConfirm', { email: u.email }))) return
-    await supabase.functions.invoke('create-user', { body: { action: 'delete', user_id: u.id } })
+    const { data } = await supabase.functions.invoke('create-user', { body: { action: 'delete', user_id: u.id } })
+    if (data?.error) alert(data.error)
     load()
   }
 
   async function resetPw(u) {
     const pw = prompt(t('admin.newPassword'))
     if (!pw) return
-    await supabase.functions.invoke('create-user', { body: { action: 'update_password', user_id: u.id, password: pw } })
+    const { data } = await supabase.functions.invoke('create-user', { body: { action: 'update_password', user_id: u.id, password: pw } })
+    if (data?.error) alert(data.error)
   }
 
   return (
@@ -154,48 +195,55 @@ export default function AdminUsers() {
           </div>
         ) : (
           <div className="space-y-2.5">
-            {users.map((u) => (
-              <div key={u.id} className="card flex items-center gap-4 px-4 py-3.5">
-                <Avatar name={u.full_name} email={u.email} size={34} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-ink truncate">{u.full_name || u.email}</span>
-                    <span
-                      className={`label-sm ${u.role === 'admin' ? 'text-accent' : 'text-faint'}`}
-                    >
-                      {t('admin.roles.' + u.role)}
-                    </span>
-                    {u.id === user.id && <span className="label-sm">({t('admin.you')})</span>}
+            {users.map((u) => {
+              const isStaffRole = u.role === 'admin' || u.role === 'moderator'
+              return (
+                <div key={u.id} className="card flex items-center gap-4 px-4 py-3.5">
+                  <Avatar name={u.full_name} email={u.email} size={34} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-ink truncate">{u.full_name || u.email}</span>
+                      <span className={`label-sm ${isStaffRole ? 'text-accent' : 'text-faint'}`}>
+                        {t('admin.roles.' + u.role)}
+                      </span>
+                      {u.id === user.id && <span className="label-sm">({t('admin.you')})</span>}
+                    </div>
+                    <div className="text-[12px] text-faint truncate">
+                      {u.full_name ? u.email + ' · ' : ''}
+                      {(memberships[u.id] ?? []).join(', ') || (isStaffRole ? '—' : t('common.none'))}
+                    </div>
                   </div>
-                  <div className="text-[12px] text-faint truncate">
-                    {u.full_name ? u.email + ' · ' : ''}
-                    {(memberships[u.id] ?? []).join(', ') || (u.role === 'admin' ? '—' : t('common.none'))}
-                  </div>
+                  {canManageUser(u) && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => resetPw(u)}
+                        className="font-mono uppercase tracking-label text-[9px] text-muted hover:text-ink border border-line rounded px-2 py-1 transition-colors"
+                      >
+                        {t('admin.resetPassword')}
+                      </button>
+                      <button
+                        onClick={() => removeUser(u)}
+                        className="font-mono uppercase tracking-label text-[9px] text-down/80 hover:text-down border border-line rounded px-2 py-1 transition-colors"
+                      >
+                        {t('admin.delete')}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {u.role !== 'admin' && (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      onClick={() => resetPw(u)}
-                      className="font-mono uppercase tracking-label text-[9px] text-muted hover:text-ink border border-line rounded px-2 py-1 transition-colors"
-                    >
-                      {t('admin.resetPassword')}
-                    </button>
-                    <button
-                      onClick={() => removeUser(u)}
-                      className="font-mono uppercase tracking-label text-[9px] text-down/80 hover:text-down border border-line rounded px-2 py-1 transition-colors"
-                    >
-                      {t('admin.delete')}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </main>
 
       {showCreate && (
-        <CreateUserModal open onClose={() => setShowCreate(false)} projects={projects} onCreated={load} />
+        <CreateUserModal
+          open
+          onClose={() => setShowCreate(false)}
+          projects={projects}
+          onCreated={load}
+          isModerator={isModerator}
+        />
       )}
     </div>
   )

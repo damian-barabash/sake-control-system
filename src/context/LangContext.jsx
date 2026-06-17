@@ -8,7 +8,9 @@ const LangContext = createContext(null)
 const CACHE_KEY = 'sake_lang'
 
 // Source of truth is profiles.language (backend). localStorage is only a pre-login
-// cache so the login screen doesn't flash the wrong language.
+// cache so the landing/login don't flash the wrong language. The public landing
+// defaults to Polish (target market) until the user picks otherwise or signs in.
+const LANDING_DEFAULT = 'pl'
 function initialLang() {
   try {
     const cached = localStorage.getItem(CACHE_KEY)
@@ -16,8 +18,7 @@ function initialLang() {
   } catch {
     /* ignore */
   }
-  const nav = (typeof navigator !== 'undefined' && navigator.language) || ''
-  return normalizeLang(nav.slice(0, 2))
+  return LANDING_DEFAULT
 }
 
 export function LangProvider({ children }) {

@@ -4,9 +4,10 @@ import { useAuth } from '../context/AuthContext'
 import { useT } from '../context/LangContext'
 import { Logo } from './Logo'
 import { LangSwitch } from './LangSwitch'
+import { ThemeToggle } from './ThemeToggle'
 
 export function TopBar() {
-  const { profile, user, isAdmin, signOut } = useAuth()
+  const { profile, user, isStaff, role, signOut } = useAuth()
   const { t } = useT()
   const name = profile?.full_name || profile?.email || user?.email
   const [menuOpen, setMenuOpen] = useState(false)
@@ -40,9 +41,9 @@ export function TopBar() {
           <NavLink to="/app" className="flex items-center gap-2.5 shrink-0">
             <Logo size={26} />
             <span className="font-semibold tracking-tight hidden sm:block">Sake Control</span>
-            {isAdmin && (
+            {isStaff && (
               <span className="font-mono uppercase tracking-label text-[9px] text-accent border border-accent/40 rounded px-1.5 py-0.5">
-                {t('topbar.admin')}
+                {t('admin.roles.' + role)}
               </span>
             )}
           </NavLink>
@@ -51,7 +52,7 @@ export function TopBar() {
             <NavLink to="/app" end className={navCls}>
               {t('topbar.projects')}
             </NavLink>
-            {isAdmin && (
+            {isStaff && (
               <NavLink to="/users" className={navCls}>
                 {t('topbar.users')}
               </NavLink>
@@ -60,7 +61,8 @@ export function TopBar() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          {/* Language switch stays in the bar on every breakpoint */}
+          {/* Theme + language stay in the bar on every breakpoint */}
+          <ThemeToggle />
           <LangSwitch />
           {/* Desktop-only identity + sign out */}
           <span className="hidden md:block text-[0.8rem] text-muted max-w-[160px] truncate">{name}</span>
@@ -106,7 +108,7 @@ export function TopBar() {
               <NavLink to="/app" end className={sheetNavCls}>
                 {t('topbar.projects')}
               </NavLink>
-              {isAdmin && (
+              {isStaff && (
                 <NavLink to="/users" className={sheetNavCls}>
                   {t('topbar.users')}
                 </NavLink>

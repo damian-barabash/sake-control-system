@@ -17,7 +17,7 @@ function aggregate(states) {
 }
 
 export default function Projects() {
-  const { isAdmin } = useAuth()
+  const { isStaff } = useAuth()
   const { t } = useT()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
@@ -47,7 +47,7 @@ export default function Projects() {
             <h1 className="text-xl font-semibold tracking-tight">{t('projects.title')}</h1>
             <p className="label mt-1.5">{t('projects.refreshNote')}</p>
           </div>
-          {isAdmin && (
+          {isStaff && (
             <button className="btn-solid" onClick={() => setShowForm(true)}>
               + {t('projects.newProject')}
             </button>
@@ -60,7 +60,7 @@ export default function Projects() {
           </div>
         ) : projects.length === 0 ? (
           <EmptyState title={t('projects.empty')} hint={t('projects.emptyHint')}>
-            {isAdmin && (
+            {isStaff && (
               <button className="btn-solid" onClick={() => setShowForm(true)}>
                 + {t('projects.newProject')}
               </button>
@@ -86,7 +86,7 @@ export default function Projects() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h2 className="font-semibold text-ink truncate group-hover:text-white">{p.name}</h2>
+                      <h2 className="font-semibold text-ink truncate group-hover:text-accent transition-colors">{p.name}</h2>
                       {p.description && (
                         <p className="text-[13px] text-faint mt-0.5 truncate">{p.description}</p>
                       )}

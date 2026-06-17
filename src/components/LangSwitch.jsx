@@ -18,7 +18,7 @@ export function LangSwitch({ className = '' }) {
           aria-pressed={lang === l.code}
           title={l.name}
           className={`px-2 py-1 font-mono uppercase tracking-label text-[10px] transition-colors ${
-            lang === l.code ? 'bg-accent text-bg' : 'text-muted hover:text-ink'
+            lang === l.code ? 'bg-accent text-[#06140d]' : 'text-muted hover:text-ink'
           }`}
         >
           {l.label}

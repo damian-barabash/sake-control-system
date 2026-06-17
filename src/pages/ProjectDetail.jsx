@@ -12,7 +12,7 @@ import { ManageMembersModal } from '../components/ManageMembersModal'
 import { checkNow } from '../lib/notify'
 import { formatLatency, formatUptime, timeAgo, formatDuration } from '../lib/format'
 
-function MonitorRow({ monitor, history, isAdmin, onEdit, onDelete, onReload }) {
+function MonitorRow({ monitor, history, canManage, onEdit, onDelete, onReload }) {
   const { t } = useT()
   const [checking, setChecking] = useState(false)
   const st = monitor.monitor_state ?? {}
@@ -91,7 +91,7 @@ function MonitorRow({ monitor, history, isAdmin, onEdit, onDelete, onReload }) {
         >
           {checking ? t('project.checking') : t('project.runNow')}
         </button>
-        {isAdmin && (
+        {canManage && (
           <>
             <button
               onClick={() => onEdit(monitor)}
@@ -125,7 +125,7 @@ function Metric({ label, value, warn }) {
 export default function ProjectDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isAdmin } = useAuth()
+  const { isModerator, user } = useAuth()
   const { t } = useT()
   const [project, setProject] = useState(null)
   const [monitors, setMonitors] = useState([])
@@ -196,6 +196,8 @@ export default function ProjectDetail() {
   }
 
   const monName = (mid) => monitors.find((m) => m.id === mid)?.name ?? '—'
+  // Manage = moderator (sees all) or the owner of this project. RLS enforces the same.
+  const canManage = isModerator || (project && project.created_by === user?.id)
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -218,7 +220,7 @@ export default function ProjectDetail() {
                 <h1 className="text-xl font-semibold tracking-tight">{project.name}</h1>
                 {project.description && <p className="text-sm text-faint mt-1">{project.description}</p>}
               </div>
-              {isAdmin && (
+              {canManage && (
                 <div className="flex items-center gap-2 flex-wrap">
                   <button className="btn-ghost" onClick={() => setShowMembers(true)}>
                     {t('project.members')}
@@ -236,7 +238,7 @@ export default function ProjectDetail() {
             {/* monitors */}
             {monitors.length === 0 ? (
               <EmptyState title={t('project.noMonitors')} hint={t('project.noMonitorsHint')}>
-                {isAdmin && (
+                {canManage && (
                   <button className="btn-solid" onClick={() => setMonitorForm({ monitor: null })}>
                     + {t('project.addMonitor')}
                   </button>
@@ -249,7 +251,7 @@ export default function ProjectDetail() {
                     key={m.id}
                     monitor={m}
                     history={history[m.id] ?? []}
-                    isAdmin={isAdmin}
+                    canManage={canManage}
                     onEdit={(mon) => setMonitorForm({ monitor: mon })}
                     onDelete={deleteMonitor}
                     onReload={load}
@@ -281,7 +283,7 @@ export default function ProjectDetail() {
               )}
             </div>
 
-            {isAdmin && (
+            {canManage && (
               <div className="mt-12 pt-6 border-t border-line">
                 <button className="btn-danger" onClick={deleteProject}>
                   {t('project.deleteProject')}

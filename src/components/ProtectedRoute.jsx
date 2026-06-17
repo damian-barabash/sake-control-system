@@ -9,11 +9,11 @@ function Splash() {
   )
 }
 
-export function Protected({ children, adminOnly = false }) {
-  const { session, profile, loading } = useAuth()
+export function Protected({ children, staffOnly = false }) {
+  const { session, isStaff, loading } = useAuth()
   if (loading) return <Splash />
   if (!session) return <Navigate to="/login" replace />
-  if (adminOnly && profile?.role !== 'admin') return <Navigate to="/app" replace />
+  if (staffOnly && !isStaff) return <Navigate to="/app" replace />
   return children
 }
 

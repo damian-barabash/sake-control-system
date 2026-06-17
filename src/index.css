@@ -3,8 +3,31 @@
 @tailwind utilities;
 
 @layer base {
+  /* Dark theme = default. Tokens are RGB triplets consumed via rgb(var(--c-x) / a). */
   :root {
     color-scheme: dark;
+    --c-bg: 10 12 11;
+    --c-surface: 18 22 19;
+    --c-surface2: 25 30 26;
+    --c-line: 36 43 38;
+    --c-line2: 51 61 54;
+    --c-ink: 235 241 237;
+    --c-muted: 138 150 143;
+    --c-faint: 85 97 90;
+    --c-accent-text: 76 222 128; /* #4ade80 — bright green for text on dark */
+  }
+  /* Light theme — opt-in via .theme-light on <html>. */
+  :root.theme-light {
+    color-scheme: light;
+    --c-bg: 247 251 249;
+    --c-surface: 255 255 255;
+    --c-surface2: 240 245 242;
+    --c-line: 226 232 228;
+    --c-line2: 205 215 209;
+    --c-ink: 17 24 20;
+    --c-muted: 90 104 97;
+    --c-faint: 124 140 132;
+    --c-accent-text: 15 157 99; /* #0f9d63 — deeper green for text on light */
   }
   html,
   body,
@@ -23,6 +46,9 @@
     background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
     background-size: 24px 24px;
     background-position: -1px -1px;
+  }
+  :root.theme-light .dotgrid {
+    background-image: radial-gradient(rgba(20, 40, 30, 0.06) 1px, transparent 1px);
   }
 }
 
@@ -46,7 +72,7 @@
     position: absolute;
     width: 14px;
     height: 14px;
-    border-color: theme('colors.line2');
+    border-color: rgb(var(--c-line2));
     pointer-events: none;
   }
   .brackets::before {
@@ -72,7 +98,7 @@
       placeholder:text-faint focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/40 transition;
   }
   .btn-solid {
-    @apply inline-flex items-center justify-center gap-2 bg-accent text-bg font-mono uppercase
+    @apply inline-flex items-center justify-center gap-2 bg-accent text-[#06140d] font-mono uppercase
       tracking-label text-[11px] px-6 py-3 rounded-lg hover:bg-[#42d98c] transition-colors
       disabled:opacity-40 disabled:cursor-not-allowed;
   }
@@ -97,6 +123,12 @@ input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px #191e1a inset;
   caret-color: #ebf1ed;
 }
+:root.theme-light input:-webkit-autofill,
+:root.theme-light input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #17241a;
+  -webkit-box-shadow: 0 0 0 1000px #f0f5f2 inset;
+  caret-color: #17241a;
+}
 
 @keyframes pulsedot {
   0%, 100% { opacity: 1; }
@@ -104,4 +136,46 @@ input:-webkit-autofill:focus {
 }
 .pulse {
   animation: pulsedot 1.8s ease-in-out infinite;
+}
+
+/* ---------- Landing (light theme) animations ---------- */
+@keyframes lpFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.lp-float { animation: lpFloat 5s ease-in-out infinite; }
+
+@keyframes lpEmailIn {
+  0% { opacity: 0; transform: translateY(-14px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lp-emailin { animation: lpEmailIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes lpRise {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.lp-rise { animation: lpRise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes lpLogoIn {
+  0% { opacity: 0; transform: translateY(34px) scale(1.45); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lp-logoin { animation: lpLogoIn 1.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-float, .lp-emailin, .lp-rise, .lp-logoin { animation: none; }
+}
+
+/* Smooth theme switch: ease colour changes on elements that don't already animate.
+   Tailwind's own transition-* utilities win (higher specificity) so buttons stay snappy. */
+@media (prefers-reduced-motion: no-preference) {
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 0.4s;
+    transition-timing-function: ease;
+  }
 }

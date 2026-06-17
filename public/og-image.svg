@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="18%" r="70%">
+      <stop offset="0%" stop-color="#34C77F" stop-opacity="0.30"/>
+      <stop offset="60%" stop-color="#34C77F" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7BE8AE"/>
+      <stop offset="100%" stop-color="#34C77F"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="1200" fill="#0c1411"/>
+  <rect width="1200" height="1200" fill="url(#glow)"/>
+
+  <!-- cloud mark -->
+  <g transform="translate(600 360) scale(1.5)" fill="url(#cloud)">
+    <circle cx="-86" cy="14" r="46"/>
+    <circle cx="-34" cy="-18" r="58"/>
+    <circle cx="34" cy="-22" r="54"/>
+    <circle cx="92" cy="12" r="46"/>
+    <circle cx="0" cy="20" r="62"/>
+    <rect x="-128" y="14" width="256" height="46" rx="23"/>
+  </g>
+
+  <text x="600" y="620" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="96" font-weight="700" letter-spacing="-2" fill="#EBF1ED">SAKE</text>
+  <text x="600" y="700" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="54" font-weight="600" letter-spacing="-1" fill="#EBF1ED">Control System</text>
+
+  <text x="600" y="800" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#8A968F">Uptime monitoring for all your projects.</text>
+  <text x="600" y="848" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#8A968F">Email alerts in seconds.</text>
+
+  <g font-family="Helvetica, Arial, sans-serif">
+    <circle cx="402" cy="952" r="9" fill="#34C77F"/>
+    <text x="424" y="962" font-size="30" letter-spacing="4" fill="#7BE8AE">SITES · DATABASES · SERVERS · SSL</text>
+  </g>
+
+  <text x="600" y="1090" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="30" letter-spacing="3" fill="#55615A">sake.barabashflow.pl    ·    Free + Pro $7/mo</text>
+</svg>

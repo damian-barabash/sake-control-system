@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useT } from '../context/LangContext'
 import { LangSwitch } from '../components/LangSwitch'
@@ -6,6 +7,7 @@ import { LangSwitch } from '../components/LangSwitch'
 export default function Login() {
   const { signIn } = useAuth()
   const { t } = useT()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -25,7 +27,10 @@ export default function Login() {
 
   return (
     <div className="min-h-screen dotgrid flex flex-col">
-      <div className="flex justify-end p-5">
+      <div className="flex items-center justify-between p-5">
+        <button onClick={() => navigate('/')} className="label hover:text-ink transition-colors">
+          {t('login.toLanding')}
+        </button>
         <LangSwitch />
       </div>
 
@@ -79,7 +84,12 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="text-center label mt-6 text-faint">{t('login.hint')}</p>
+          <p className="text-center text-xs text-faint mt-6">
+            {t('login.noAccount')}{' '}
+            <button onClick={() => navigate('/register')} className="text-ink underline-offset-2 hover:underline">
+              {t('login.signup')}
+            </button>
+          </p>
         </div>
       </div>
     </div>
