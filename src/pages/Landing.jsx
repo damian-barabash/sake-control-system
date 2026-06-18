@@ -1,12 +1,11 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useT } from '../context/LangContext'
 import { dict } from '../lib/i18n'
 import { LangSwitch } from '../components/LangSwitch'
 import { ThemeToggle } from '../components/ThemeToggle'
-
-const CloudCanvas = lazy(() => import('../landing/CloudCanvas'))
+import GridBackground from '../landing/GridBackground'
 
 const STATUS = { up: '#34C77F', down: '#E2564A', degraded: '#E3B341' }
 const MAIL = {
@@ -251,17 +250,6 @@ export default function Landing() {
     return () => { io.disconnect(); clearTimeout(tm) }
   }, [])
 
-  // faint logo drifts in the background as you scroll
-  const bgLogoRef = useRef(null)
-  useEffect(() => {
-    const onS = () => {
-      const y = window.scrollY
-      if (bgLogoRef.current) bgLogoRef.current.style.transform = `translateY(${-y * 0.12}px) rotate(${y * 0.015}deg)`
-    }
-    window.addEventListener('scroll', onS, { passive: true }); onS()
-    return () => window.removeEventListener('scroll', onS)
-  }, [])
-
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && setMenuOpen(false)
     window.addEventListener('keydown', onKey)
@@ -279,10 +267,12 @@ export default function Landing() {
 
   return (
     <div className="relative min-h-screen font-sans text-ink antialiased">
-      {/* faint logo drifting in the background (below the hero) */}
-      <div className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden">
-        <img ref={bgLogoRef} src="./logo.png" alt="" className="w-[62vw] max-w-[640px] select-none opacity-[0.05] will-change-transform" />
-      </div>
+      {/* living grid backdrop: faint grid + brand logos popping green / red */}
+      <GridBackground className="pointer-events-none fixed inset-0 z-0 h-full w-full" />
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{ background: 'radial-gradient(120% 90% at 50% 0%, rgb(var(--c-bg) / 0) 40%, rgb(var(--c-bg) / 0.55) 100%)' }}
+      />
 
       {/* preloader */}
       <div className={`fixed inset-0 z-[60] flex flex-col items-center justify-center bg-bg transition-opacity duration-700 ${booted ? 'pointer-events-none opacity-0' : 'opacity-100'}`}>
@@ -356,9 +346,6 @@ export default function Landing() {
       <div className="relative z-10">
         {/* hero */}
         <section id="top" className="relative flex min-h-[92vh] items-center overflow-hidden pt-16">
-          <div className="pointer-events-none absolute inset-0">
-            <Suspense fallback={null}><CloudCanvas className="absolute inset-0 h-full w-full" mood="ok" /></Suspense>
-          </div>
           <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(56% 44% at 50% 44%, rgb(var(--c-bg) / 0.74) 0%, rgb(var(--c-bg) / 0.28) 46%, rgb(var(--c-bg) / 0) 72%)' }} />
 
           <div className="lp-rise relative z-10 mx-auto w-full max-w-3xl px-5 text-center">
