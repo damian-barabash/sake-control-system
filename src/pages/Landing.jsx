@@ -247,13 +247,13 @@ function StoreButton({ kind, top, name, soon }) {
 function PhoneMock({ lang }) {
   const A = dict(lang).landing.app
   return (
-    <div className="relative mx-auto w-[270px] shrink-0 lp-float">
-      <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-[radial-gradient(60%_50%_at_50%_30%,rgba(52,199,127,0.3)_0%,rgba(52,199,127,0)_70%)]" />
-      <div className="rounded-[2.6rem] border border-line2 bg-[#0a0c0b] p-2.5 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7)]">
-        <div className="relative overflow-hidden rounded-[2rem] bg-[#0e110f]">
+    <div className="relative mx-auto w-[278px] shrink-0 lp-float">
+      <div className="absolute -inset-6 -z-10 rounded-[3.2rem] bg-[radial-gradient(60%_50%_at_50%_30%,rgba(52,199,127,0.3)_0%,rgba(52,199,127,0)_70%)]" />
+      <div className="rounded-[2.8rem] border border-line2 bg-[#0a0c0b] p-2.5 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7)]">
+        <div className="relative flex min-h-[600px] flex-col overflow-hidden rounded-[2.3rem] bg-[#0e110f]">
           {/* notch */}
-          <div className="absolute left-1/2 top-2 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-[#0a0c0b]" />
-          <div className="px-4 pb-5 pt-9">
+          <div className="absolute left-1/2 top-2.5 z-10 h-6 w-28 -translate-x-1/2 rounded-full bg-[#0a0c0b]" />
+          <div className="flex flex-1 flex-col px-4 pb-4 pt-12">
             <div className="flex items-center gap-2.5">
               <img src="./logo.png" alt="" className="h-7 w-7" />
               <div>
@@ -261,20 +261,24 @@ function PhoneMock({ lang }) {
                 <div className="text-[10px] text-white/45">{A.phoneTitle}</div>
               </div>
             </div>
-            <div className="mt-4 space-y-2">
+            <div className="mt-5 space-y-3">
               {A.rows.map((r) => (
-                <div key={r.name} className="flex items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+                <div key={r.name} className="flex items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-3.5">
                   <Dot status={r.status} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[12px] font-medium text-white">{r.name}</div>
+                    <div className="truncate text-[12.5px] font-medium text-white">{r.name}</div>
                     <div className="text-[10px] text-white/45">{r.kind}</div>
                   </div>
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: STATUS[r.status] }} />
                 </div>
               ))}
             </div>
-            <div className="mt-3 rounded-xl py-2.5 text-center text-[12px] font-medium text-[#06140d]" style={{ background: STATUS.up }}>
-              {dict(lang).landing.inbox.live}
+            <div className="mt-auto pt-5">
+              <div className="rounded-xl py-3 text-center text-[12px] font-medium text-[#06140d]" style={{ background: STATUS.up }}>
+                {dict(lang).landing.inbox.live}
+              </div>
+              {/* home indicator */}
+              <div className="mx-auto mt-3 h-1 w-28 rounded-full bg-white/20" />
             </div>
           </div>
         </div>
@@ -474,6 +478,13 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* mobile app */}
+        <section id="app" className="py-24">
+          <div className="mx-auto max-w-6xl px-5">
+            <AppShowcase lang={lang} />
+          </div>
+        </section>
+
         {/* incident panel */}
         <section ref={incidentRef} className="py-24">
           <div className="mx-auto max-w-6xl px-5">
@@ -503,13 +514,6 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* mobile app */}
-        <section id="app" className="py-24">
-          <div className="mx-auto max-w-6xl px-5">
-            <AppShowcase lang={lang} />
           </div>
         </section>
 
