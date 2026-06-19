@@ -48,7 +48,7 @@ const DICT = {
       successTitle: 'Почти готово', checkEmail: 'Подтвердите адрес по ссылке в письме.', successCta: 'К входу',
     },
     landing: {
-      nav: { features: 'Возможности', how: 'Как работает', pricing: 'Цены', faq: 'Вопросы', login: 'Войти', signup: 'Начать бесплатно' },
+      nav: { features: 'Возможности', how: 'Как работает', app: 'Приложение', pricing: 'Цены', faq: 'Вопросы', login: 'Войти', signup: 'Начать бесплатно' },
       loader: 'Собираем облако…',
       hero: {
         badge: 'Uptime-мониторинг нового поколения',
@@ -113,6 +113,27 @@ const DICT = {
           { n: '01', title: 'Заведите проект', body: 'Создайте проект и добавьте мониторы: сайт, базу, сервер, порт.' },
           { n: '02', title: 'Облако проверяет', body: 'Каждую минуту облачный планировщик пингует сервисы и копит историю.' },
           { n: '03', title: 'Письмо при сбое', body: 'Падение или восстановление — письмо летит на нужный адрес.' },
+        ],
+      },
+      app: {
+        label: 'Мобильное приложение',
+        title: 'Все мониторы — в кармане',
+        sub: 'Нативное приложение для iOS и Android. Тот же аккаунт, что и в вебе: статусы проектов, инциденты и проверка по тапу — где бы вы ни были.',
+        features: [
+          'Статус всех проектов с агрегатом',
+          'Спарклайн latency и таймлайн инцидентов',
+          'Проверка по тапу и pull-to-refresh',
+          'Тёмная и светлая темы, RU / PL / EN',
+        ],
+        ios: 'Загрузить в', iosName: 'App Store',
+        android: 'Доступно в', androidName: 'Google Play',
+        soon: 'Скоро',
+        phoneTitle: 'Мои проекты',
+        rows: [
+          { name: 'barabashflow.pl', kind: 'HTTP · 84 мс', status: 'up' },
+          { name: 'Supabase · REST', kind: 'health · 96 мс', status: 'up' },
+          { name: 'api.cert · SSL', kind: 'осталось 14 дней', status: 'degraded' },
+          { name: 'hetzner · :5432', kind: 'таймаут', status: 'down' },
         ],
       },
       pricing: {
@@ -218,7 +239,7 @@ const DICT = {
       successTitle: 'Prawie gotowe', checkEmail: 'Potwierdź adres linkiem z maila.', successCta: 'Do logowania',
     },
     landing: {
-      nav: { features: 'Funkcje', how: 'Jak działa', pricing: 'Cennik', faq: 'Pytania', login: 'Zaloguj', signup: 'Zacznij za darmo' },
+      nav: { features: 'Funkcje', how: 'Jak działa', app: 'Aplikacja', pricing: 'Cennik', faq: 'Pytania', login: 'Zaloguj', signup: 'Zacznij za darmo' },
       loader: 'Tworzymy chmurę…',
       hero: {
         badge: 'Monitoring uptime nowej generacji',
@@ -283,6 +304,27 @@ const DICT = {
           { n: '01', title: 'Załóż projekt', body: 'Utwórz projekt i dodaj monitory: stronę, bazę, serwer, port.' },
           { n: '02', title: 'Chmura sprawdza', body: 'Co minutę harmonogram w chmurze pinguje usługi i zbiera historię.' },
           { n: '03', title: 'Mail przy awarii', body: 'Awaria lub przywrócenie — mail leci na właściwy adres.' },
+        ],
+      },
+      app: {
+        label: 'Aplikacja mobilna',
+        title: 'Wszystkie monitory w kieszeni',
+        sub: 'Natywna aplikacja na iOS i Androida. To samo konto co w wersji web: statusy projektów, awarie i sprawdzenie jednym tapnięciem — gdziekolwiek jesteś.',
+        features: [
+          'Status wszystkich projektów ze zbiorczym widokiem',
+          'Sparkline latency i oś czasu awarii',
+          'Sprawdzenie jednym tapnięciem i pull-to-refresh',
+          'Tryb ciemny i jasny, RU / PL / EN',
+        ],
+        ios: 'Pobierz z', iosName: 'App Store',
+        android: 'Pobierz z', androidName: 'Google Play',
+        soon: 'Wkrótce',
+        phoneTitle: 'Moje projekty',
+        rows: [
+          { name: 'barabashflow.pl', kind: 'HTTP · 84 ms', status: 'up' },
+          { name: 'Supabase · REST', kind: 'health · 96 ms', status: 'up' },
+          { name: 'api.cert · SSL', kind: 'zostało 14 dni', status: 'degraded' },
+          { name: 'hetzner · :5432', kind: 'timeout', status: 'down' },
         ],
       },
       pricing: {
@@ -388,7 +430,7 @@ const DICT = {
       successTitle: 'Almost there', checkEmail: 'Confirm your address via the link in the email.', successCta: 'To sign in',
     },
     landing: {
-      nav: { features: 'Features', how: 'How it works', pricing: 'Pricing', faq: 'FAQ', login: 'Sign in', signup: 'Start free' },
+      nav: { features: 'Features', how: 'How it works', app: 'App', pricing: 'Pricing', faq: 'FAQ', login: 'Sign in', signup: 'Start free' },
       loader: 'Forming the cloud…',
       hero: {
         badge: 'Next-gen uptime monitoring',
@@ -453,6 +495,27 @@ const DICT = {
           { n: '01', title: 'Add a project', body: 'Create a project and attach monitors: site, database, server, port.' },
           { n: '02', title: 'The cloud checks', body: 'Every minute a cloud scheduler pings your services and builds history.' },
           { n: '03', title: 'Email on failure', body: 'Down or recovered — an email flies to the right address.' },
+        ],
+      },
+      app: {
+        label: 'Mobile app',
+        title: 'Every monitor in your pocket',
+        sub: 'A native app for iOS and Android. The same account as on the web: project statuses, incidents and tap-to-check — wherever you are.',
+        features: [
+          'Status of every project with a roll-up',
+          'Latency sparkline and incident timeline',
+          'Tap to check and pull-to-refresh',
+          'Dark & light themes, RU / PL / EN',
+        ],
+        ios: 'Download on the', iosName: 'App Store',
+        android: 'Get it on', androidName: 'Google Play',
+        soon: 'Soon',
+        phoneTitle: 'My projects',
+        rows: [
+          { name: 'barabashflow.pl', kind: 'HTTP · 84 ms', status: 'up' },
+          { name: 'Supabase · REST', kind: 'health · 96 ms', status: 'up' },
+          { name: 'api.cert · SSL', kind: '14 days left', status: 'degraded' },
+          { name: 'hetzner · :5432', kind: 'timeout', status: 'down' },
         ],
       },
       pricing: {

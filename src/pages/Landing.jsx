@@ -221,6 +221,92 @@ function PulseDemo({ lang }) {
   )
 }
 
+/* ---------- store badge buttons ---------- */
+function StoreButton({ kind, top, name, soon }) {
+  return (
+    <a
+      href="#"
+      onClick={(e) => e.preventDefault()}
+      className="group relative inline-flex items-center gap-3 rounded-xl border border-line2 bg-[#0c0e0d] px-4 py-2.5 text-white transition-transform hover:scale-[1.03]"
+    >
+      {kind === 'ios' ? (
+        <svg className="h-7 w-7" viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.7c0-2 1.6-3 1.7-3-.9-1.4-2.4-1.5-2.9-1.6-1.2-.1-2.4.7-3 .7-.6 0-1.6-.7-2.6-.7-1.3 0-2.6.8-3.3 2-1.4 2.4-.4 6 1 8 .7 1 1.4 2 2.4 2 1 0 1.3-.6 2.5-.6 1.2 0 1.5.6 2.5.6 1 0 1.7-1 2.3-2 .7-1.1 1-2.2 1-2.3 0 0-2-.8-2-3.1zM14.5 6c.5-.7.9-1.6.8-2.5-.8 0-1.7.5-2.3 1.2-.5.6-.9 1.5-.8 2.4.9 0 1.8-.4 2.3-1.1z" /></svg>
+      ) : (
+        <svg className="h-6 w-6" viewBox="0 0 24 24"><path d="M3.6 2.3c-.2.2-.3.5-.3 1v17.4c0 .5.1.8.3 1l9.2-9.7L3.6 2.3z" fill="#34C77F" /><path d="M16.6 8.9 5.3 2.5c-.5-.3-1-.3-1.4-.1l9.1 9.6 3.6-3.1z" fill="#E3B341" /><path d="M16.6 15.1 13 12l-9.1 9.6c.4.2.9.2 1.4-.1l11.3-6.4z" fill="#E2564A" /><path d="m20.4 10.8-2.9-1.6-3.8 3.3 3.8 3.3 2.9-1.6c1-.6 1-2.2 0-2.8z" fill="#34C77F" /></svg>
+      )}
+      <span className="flex flex-col leading-tight">
+        <span className="text-[10px] text-white/65">{top}</span>
+        <span className="font-display text-[16px] font-semibold">{name}</span>
+      </span>
+      {soon && <span className="absolute -right-2 -top-2 rounded-full bg-accent px-2 py-0.5 text-[9px] font-semibold text-[#06140d] shadow">{soon}</span>}
+    </a>
+  )
+}
+
+/* ---------- phone mockup ---------- */
+function PhoneMock({ lang }) {
+  const A = dict(lang).landing.app
+  return (
+    <div className="relative mx-auto w-[270px] shrink-0 lp-float">
+      <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-[radial-gradient(60%_50%_at_50%_30%,rgba(52,199,127,0.3)_0%,rgba(52,199,127,0)_70%)]" />
+      <div className="rounded-[2.6rem] border border-line2 bg-[#0a0c0b] p-2.5 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.7)]">
+        <div className="relative overflow-hidden rounded-[2rem] bg-[#0e110f]">
+          {/* notch */}
+          <div className="absolute left-1/2 top-2 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-[#0a0c0b]" />
+          <div className="px-4 pb-5 pt-9">
+            <div className="flex items-center gap-2.5">
+              <img src="./logo.png" alt="" className="h-7 w-7" />
+              <div>
+                <div className="font-display text-[14px] font-semibold text-white">Sake Control</div>
+                <div className="text-[10px] text-white/45">{A.phoneTitle}</div>
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              {A.rows.map((r) => (
+                <div key={r.name} className="flex items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+                  <Dot status={r.status} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[12px] font-medium text-white">{r.name}</div>
+                    <div className="text-[10px] text-white/45">{r.kind}</div>
+                  </div>
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: STATUS[r.status] }} />
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 rounded-xl py-2.5 text-center text-[12px] font-medium text-[#06140d]" style={{ background: STATUS.up }}>
+              {dict(lang).landing.inbox.live}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- mobile app showcase ---------- */
+function AppShowcase({ lang }) {
+  const A = dict(lang).landing.app
+  return (
+    <div className="grid items-center gap-12 lg:grid-cols-2">
+      <div>
+        <span className="text-[13px] font-medium text-accentText">{A.label}</span>
+        <h2 className="mt-3 font-display text-[1.9rem] font-semibold leading-tight tracking-tight sm:text-4xl">{A.title}</h2>
+        <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted">{A.sub}</p>
+        <ul className="mt-6 space-y-2.5">
+          {A.features.map((f) => (
+            <li key={f} className="flex items-start gap-2.5 text-[14px] text-ink"><span className="mt-0.5 text-accent">✓</span> {f}</li>
+          ))}
+        </ul>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <StoreButton kind="ios" top={A.ios} name={A.iosName} soon={A.soon} />
+          <StoreButton kind="android" top={A.android} name={A.androidName} soon={A.soon} />
+        </div>
+      </div>
+      <PhoneMock lang={lang} />
+    </div>
+  )
+}
+
 export default function Landing() {
   const { t, lang } = useT()
   const { session } = useAuth()
@@ -261,6 +347,7 @@ export default function Landing() {
   const navLinks = [
     { id: 'features', label: L.nav.features },
     { id: 'how', label: L.nav.how },
+    { id: 'app', label: L.nav.app },
     { id: 'pricing', label: L.nav.pricing },
     { id: 'faq', label: L.nav.faq },
   ]
@@ -416,6 +503,13 @@ export default function Landing() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* mobile app */}
+        <section id="app" className="py-24">
+          <div className="mx-auto max-w-6xl px-5">
+            <AppShowcase lang={lang} />
           </div>
         </section>
 
