@@ -311,6 +311,111 @@ function AppShowcase({ lang }) {
   )
 }
 
+/* ---------- Supabase keep-alive showcase ---------- */
+const SB_GREEN = '#3ECF8E'
+
+function SupabaseLogo({ className = 'h-8 w-8' }) {
+  return (
+    <svg className={className} viewBox="0 0 109 113" fill="none">
+      <path d="M63.708 110.284c-2.86 3.601-8.658 1.628-8.727-2.97l-1.007-67.251h45.22c8.19 0 12.758 9.46 7.665 15.874l-43.151 54.347Z" fill="url(#sbA)" />
+      <path d="M63.708 110.284c-2.86 3.601-8.658 1.628-8.727-2.97l-1.007-67.251h45.22c8.19 0 12.758 9.46 7.665 15.874l-43.151 54.347Z" fill="url(#sbB)" fillOpacity=".2" />
+      <path d="M45.317 2.071c2.86-3.601 8.657-1.628 8.726 2.97l.442 67.251H9.83c-8.19 0-12.759-9.46-7.665-15.875L45.317 2.071Z" fill={SB_GREEN} />
+      <defs>
+        <linearGradient id="sbA" x1="53.974" y1="54.974" x2="94.163" y2="71.829" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#249361" />
+          <stop offset="1" stopColor="#3ECF8E" />
+        </linearGradient>
+        <linearGradient id="sbB" x1="36.156" y1="30.578" x2="54.484" y2="65.081" gradientUnits="userSpaceOnUse">
+          <stop />
+          <stop offset="1" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+function KeepAliveCard({ lang }) {
+  const K = dict(lang).landing.keepalive.card
+  const pingDays = [1, 4, 7]
+  return (
+    <div className="relative mx-auto w-full max-w-md">
+      <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-[radial-gradient(60%_50%_at_50%_35%,rgba(62,207,142,0.22)_0%,rgba(62,207,142,0)_70%)]" />
+      <div className="rounded-2xl border border-line bg-surface/70 p-6">
+        <div className="flex items-center gap-3">
+          <SupabaseLogo className="h-9 w-9 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-[14px] font-medium text-ink">my-project.supabase.co</div>
+            <div className="text-[11px] text-faint">{K.plan}</div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium" style={{ color: SB_GREEN, borderColor: rgba(SB_GREEN, 0.35), background: rgba(SB_GREEN, 0.1) }}>
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: SB_GREEN }} />
+            {K.active}
+          </span>
+        </div>
+
+        <div className="mt-6">
+          <div className="mb-2.5 flex items-center justify-between text-[11px] text-faint">
+            <span>{K.timeline}</span>
+            <span className="font-mono">{K.window}</span>
+          </div>
+          <div className="grid grid-cols-7 gap-1.5">
+            {[1, 2, 3, 4, 5, 6, 7].map((d) => {
+              const ping = pingDays.includes(d)
+              return (
+                <div
+                  key={d}
+                  className={`flex h-14 flex-col items-center justify-center gap-1.5 rounded-lg border ${ping ? '' : 'border-line bg-surface2'}`}
+                  style={ping ? { borderColor: rgba(SB_GREEN, 0.4), background: rgba(SB_GREEN, 0.1) } : undefined}
+                >
+                  <span className={`text-[10px] ${ping ? 'font-semibold' : 'text-faint'}`} style={ping ? { color: SB_GREEN } : undefined}>{d}</span>
+                  {ping ? (
+                    <span style={{ color: SB_GREEN }}><Ico name="activity" className="h-3.5 w-3.5" /></span>
+                  ) : (
+                    <span className="h-1 w-1 rounded-full bg-line2" />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-center gap-2.5 rounded-xl border border-line bg-surface2 px-3.5 py-3">
+          <span className="shrink-0 text-accent"><Ico name="database" className="h-4 w-4" /></span>
+          <span className="truncate font-mono text-[12px] text-muted">GET /storage/v1/bucket</span>
+          <span className="ml-auto shrink-0 font-mono text-[11px]" style={{ color: SB_GREEN }}>{K.ok}</span>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2.5 rounded-xl border px-3.5 py-3" style={{ borderColor: 'rgba(226,86,74,0.28)', background: 'rgba(226,86,74,0.06)' }}>
+          <span className="truncate text-[12px] text-muted line-through" style={{ textDecorationColor: 'rgba(226,86,74,0.65)' }}>{K.pause}</span>
+          <span className="ml-auto shrink-0 text-[11px] font-medium" style={{ color: SB_GREEN }}>{K.never}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function KeepAliveShowcase({ lang }) {
+  const K = dict(lang).landing.keepalive
+  return (
+    <div className="grid items-center gap-12 lg:grid-cols-2">
+      <div>
+        <span className="inline-flex items-center gap-2 text-[13px] font-medium" style={{ color: SB_GREEN }}>
+          <SupabaseLogo className="h-4 w-4" /> {K.label}
+        </span>
+        <h2 className="mt-3 font-display text-[1.9rem] font-semibold leading-tight tracking-tight sm:text-4xl">{K.title}</h2>
+        <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted">{K.sub}</p>
+        <ul className="mt-6 space-y-2.5">
+          {K.features.map((f) => (
+            <li key={f} className="flex items-start gap-2.5 text-[14px] text-ink"><span className="mt-0.5" style={{ color: SB_GREEN }}>✓</span> {f}</li>
+          ))}
+        </ul>
+        <p className="mt-6 max-w-md text-[12px] leading-relaxed text-faint">{K.note}</p>
+      </div>
+      <KeepAliveCard lang={lang} />
+    </div>
+  )
+}
+
 export default function Landing() {
   const { t, lang } = useT()
   const { session } = useAuth()
@@ -352,6 +457,7 @@ export default function Landing() {
     { id: 'features', label: L.nav.features },
     { id: 'how', label: L.nav.how },
     { id: 'app', label: L.nav.app },
+    { id: 'keepalive', label: L.nav.keepalive },
     { id: 'pricing', label: L.nav.pricing },
     { id: 'faq', label: L.nav.faq },
   ]
@@ -482,6 +588,13 @@ export default function Landing() {
         <section id="app" className="py-24">
           <div className="mx-auto max-w-6xl px-5">
             <AppShowcase lang={lang} />
+          </div>
+        </section>
+
+        {/* supabase keep-alive */}
+        <section id="keepalive" className="py-24">
+          <div className="mx-auto max-w-6xl px-5">
+            <KeepAliveShowcase lang={lang} />
           </div>
         </section>
 

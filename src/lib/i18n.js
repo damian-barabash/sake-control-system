@@ -48,7 +48,7 @@ const DICT = {
       successTitle: 'Почти готово', checkEmail: 'Подтвердите адрес по ссылке в письме.', successCta: 'К входу',
     },
     landing: {
-      nav: { features: 'Возможности', how: 'Как работает', app: 'Приложение', pricing: 'Цены', faq: 'Вопросы', login: 'Войти', signup: 'Начать бесплатно' },
+      nav: { features: 'Возможности', how: 'Как работает', app: 'Приложение', keepalive: 'Keep-alive', pricing: 'Цены', faq: 'Вопросы', login: 'Войти', signup: 'Начать бесплатно' },
       loader: 'Собираем облако…',
       hero: {
         badge: 'Uptime-мониторинг нового поколения',
@@ -135,6 +135,27 @@ const DICT = {
           { name: 'api.cert · SSL', kind: 'осталось 14 дней', status: 'degraded' },
           { name: 'hetzner · :5432', kind: 'таймаут', status: 'down' },
         ],
+      },
+      keepalive: {
+        label: 'Supabase keep-alive',
+        title: 'Бесплатный Supabase больше не засыпает',
+        sub: 'Supabase ставит free-проекты на паузу после 7 дней без активности. SAKE раз в 3 дня делает настоящий API-запрос с anon-ключом вашего проекта — это честная активность, и пауза просто не наступает.',
+        features: [
+          'Вставьте anon / publishable key в монитор — это вся настройка',
+          'Настоящий запрос к базе раз в 3 дня — с двойным запасом',
+          'Без нагрузки: остальные проверки — лёгкий пинг каждые 5 минут',
+          'Ключ отозван — монитор сразу подсветится жёлтым',
+        ],
+        note: 'Нужен только публичный anon-ключ (он и так виден в коде вашего сайта). Секретные ключи (service_role) не используются и не хранятся.',
+        card: {
+          plan: 'Supabase · Free план',
+          active: 'Активен',
+          timeline: 'API-запрос раз в 3 дня',
+          window: '7 дней',
+          ok: '200 OK',
+          pause: 'Пауза за неактивность (7 дней)',
+          never: 'не наступит',
+        },
       },
       pricing: {
         label: 'Цены',
@@ -241,7 +262,7 @@ const DICT = {
       successTitle: 'Prawie gotowe', checkEmail: 'Potwierdź adres linkiem z maila.', successCta: 'Do logowania',
     },
     landing: {
-      nav: { features: 'Funkcje', how: 'Jak działa', app: 'Aplikacja', pricing: 'Cennik', faq: 'Pytania', login: 'Zaloguj', signup: 'Zacznij za darmo' },
+      nav: { features: 'Funkcje', how: 'Jak działa', app: 'Aplikacja', keepalive: 'Keep-alive', pricing: 'Cennik', faq: 'Pytania', login: 'Zaloguj', signup: 'Zacznij za darmo' },
       loader: 'Tworzymy chmurę…',
       hero: {
         badge: 'Monitoring uptime nowej generacji',
@@ -328,6 +349,27 @@ const DICT = {
           { name: 'api.cert · SSL', kind: 'zostało 14 dni', status: 'degraded' },
           { name: 'hetzner · :5432', kind: 'timeout', status: 'down' },
         ],
+      },
+      keepalive: {
+        label: 'Supabase keep-alive',
+        title: 'Darmowy Supabase już nie zasypia',
+        sub: 'Supabase pauzuje darmowe projekty po 7 dniach bez aktywności. SAKE co 3 dni wykonuje prawdziwe zapytanie API z kluczem anon twojego projektu — to realna aktywność, więc pauza po prostu nie następuje.',
+        features: [
+          'Wklej anon / publishable key do monitora — to cała konfiguracja',
+          'Prawdziwe zapytanie do bazy co 3 dni — z podwójnym zapasem',
+          'Bez obciążenia: pozostałe sprawdzenia to lekki ping co 5 minut',
+          'Klucz odwołany — monitor od razu zaświeci się na żółto',
+        ],
+        note: 'Potrzebny jest tylko publiczny klucz anon (i tak widoczny w kodzie twojej strony). Klucze sekretne (service_role) nie są używane ani przechowywane.',
+        card: {
+          plan: 'Supabase · Plan Free',
+          active: 'Aktywny',
+          timeline: 'Zapytanie API co 3 dni',
+          window: '7 dni',
+          ok: '200 OK',
+          pause: 'Pauza za brak aktywności (7 dni)',
+          never: 'nie nastąpi',
+        },
       },
       pricing: {
         label: 'Cennik',
@@ -434,7 +476,7 @@ const DICT = {
       successTitle: 'Almost there', checkEmail: 'Confirm your address via the link in the email.', successCta: 'To sign in',
     },
     landing: {
-      nav: { features: 'Features', how: 'How it works', app: 'App', pricing: 'Pricing', faq: 'FAQ', login: 'Sign in', signup: 'Start free' },
+      nav: { features: 'Features', how: 'How it works', app: 'App', keepalive: 'Keep-alive', pricing: 'Pricing', faq: 'FAQ', login: 'Sign in', signup: 'Start free' },
       loader: 'Forming the cloud…',
       hero: {
         badge: 'Next-gen uptime monitoring',
@@ -521,6 +563,27 @@ const DICT = {
           { name: 'api.cert · SSL', kind: '14 days left', status: 'degraded' },
           { name: 'hetzner · :5432', kind: 'timeout', status: 'down' },
         ],
+      },
+      keepalive: {
+        label: 'Supabase keep-alive',
+        title: 'Free Supabase never falls asleep',
+        sub: 'Supabase pauses free projects after 7 days of inactivity. Every 3 days SAKE makes a real API request with your project’s anon key — genuine activity, so the pause simply never happens.',
+        features: [
+          'Paste the anon / publishable key into a monitor — that’s the whole setup',
+          'A real database request every 3 days — with a 2x margin',
+          'No load: all other checks stay a light ping every 5 minutes',
+          'Key revoked? The monitor turns yellow right away',
+        ],
+        note: 'Only the public anon key is needed (it’s already visible in your site’s code). Secret keys (service_role) are never used or stored.',
+        card: {
+          plan: 'Supabase · Free plan',
+          active: 'Active',
+          timeline: 'API request every 3 days',
+          window: '7 days',
+          ok: '200 OK',
+          pause: 'Inactivity pause (7 days)',
+          never: 'won’t happen',
+        },
       },
       pricing: {
         label: 'Pricing',
