@@ -181,6 +181,8 @@ const DICT = {
       port: 'Порт', method: 'HTTP-метод', expectedStatus: 'Ожидаемый код', keyword: 'Искомое слово в ответе',
       interval: 'Интервал (сек)', timeout: 'Таймаут (мс)', sslWarnDays: 'Предупредить за N дней до истечения SSL',
       executor: 'Где проверять', enabled: 'Включён',
+      anonKey: 'Anon / publishable key (опционально)',
+      anonKeyHint: 'С ключом монитор раз в 3 дня делает настоящий API-запрос в базу — Supabase считает это активностью, и бесплатный проект не ставится на паузу (keep-alive). Где взять ключ: supabase.com/dashboard → ваш проект → ⚙ Project Settings → API Keys → скопируйте «anon public» (или Publishable key).',
       deleteConfirm: 'Удалить монитор «{name}»?',
     },
     projectForm: {
@@ -372,6 +374,8 @@ const DICT = {
       port: 'Port', method: 'Metoda HTTP', expectedStatus: 'Oczekiwany kod', keyword: 'Szukane słowo w odpowiedzi',
       interval: 'Interwał (s)', timeout: 'Timeout (ms)', sslWarnDays: 'Ostrzeż na N dni przed wygaśnięciem SSL',
       executor: 'Gdzie sprawdzać', enabled: 'Włączony',
+      anonKey: 'Anon / publishable key (opcjonalnie)',
+      anonKeyHint: 'Z kluczem monitor co 3 dni wykonuje prawdziwe zapytanie API do bazy — Supabase liczy to jako aktywność i darmowy projekt nie jest pauzowany (keep-alive). Gdzie znaleźć klucz: supabase.com/dashboard → twój projekt → ⚙ Project Settings → API Keys → skopiuj „anon public” (lub Publishable key).',
       deleteConfirm: 'Usunąć monitor „{name}”?',
     },
     projectForm: {
@@ -563,6 +567,8 @@ const DICT = {
       port: 'Port', method: 'HTTP method', expectedStatus: 'Expected code', keyword: 'Keyword in response',
       interval: 'Interval (s)', timeout: 'Timeout (ms)', sslWarnDays: 'Warn N days before SSL expiry',
       executor: 'Run from', enabled: 'Enabled',
+      anonKey: 'Anon / publishable key (optional)',
+      anonKeyHint: 'With a key the monitor makes a real API request to the database every 3 days — Supabase counts it as activity, so a free project is never auto-paused (keep-alive). Where to find the key: supabase.com/dashboard → your project → ⚙ Project Settings → API Keys → copy “anon public” (or the Publishable key).',
       deleteConfirm: 'Delete monitor “{name}”?',
     },
     projectForm: {

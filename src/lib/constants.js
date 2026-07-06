@@ -19,7 +19,7 @@ export const TYPE_FIELDS = {
   keyword:  ['method', 'keyword', 'ssl'],
   ssl:      ['ssl_warn_days'],
   tcp:      ['port'],
-  supabase: [],
+  supabase: ['anon_key'],
   ping:     [],
 }
 

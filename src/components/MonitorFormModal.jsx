@@ -21,6 +21,7 @@ export function MonitorFormModal({ open, onClose, projectId, monitor, onSaved })
     interval_seconds: monitor?.interval_seconds ?? 300,
     timeout_ms: monitor?.timeout_ms ?? 10000,
     ssl_warn_days: monitor?.ssl_warn_days ?? 14,
+    anon_key: monitor?.anon_key ?? '',
     enabled: monitor?.enabled ?? true,
   }))
   const [busy, setBusy] = useState(false)
@@ -53,6 +54,7 @@ export function MonitorFormModal({ open, onClose, projectId, monitor, onSaved })
       method: has('method') ? form.method : 'GET',
       expected_status: has('expected_status') ? num(form.expected_status) : null,
       keyword: has('keyword') ? form.keyword.trim() || null : null,
+      anon_key: has('anon_key') ? form.anon_key.trim() || null : null,
       interval_seconds: num(form.interval_seconds) || 300,
       timeout_ms: num(form.timeout_ms) || 10000,
       ssl_warn_days: num(form.ssl_warn_days) || 14,
@@ -141,6 +143,19 @@ export function MonitorFormModal({ open, onClose, projectId, monitor, onSaved })
         {has('keyword') && (
           <Field label={t('monitorForm.keyword')}>
             <input className="field-box" value={form.keyword} onChange={(e) => set('keyword', e.target.value)} placeholder="ok" />
+          </Field>
+        )}
+
+        {has('anon_key') && (
+          <Field label={t('monitorForm.anonKey')} hint={t('monitorForm.anonKeyHint')}>
+            <input
+              className="field-box font-mono text-xs"
+              value={form.anon_key}
+              onChange={(e) => set('anon_key', e.target.value)}
+              placeholder="eyJ… / sb_publishable_…"
+              autoComplete="off"
+              spellCheck={false}
+            />
           </Field>
         )}
 

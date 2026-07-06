@@ -15,6 +15,9 @@ const CRON_KEY = Deno.env.get('CRON_KEY') // optional hardening for the schedule
 
 const DEGRADED_MS = 3000
 const FAIL_THRESHOLD = 2 // consecutive downs before an incident opens
+// Authed keep-alive ping cadence for supabase monitors with an anon key.
+// Supabase pauses free projects after 7 days of no activity; every 3 days = 2x margin.
+const KEEPALIVE_MS = 3 * 86400000
 
 function cors(origin: string | null) {
   return {
@@ -41,7 +44,7 @@ function hostFromTarget(target: string): string {
   return target.replace(/^.*?@/, '').split('/')[0].split(':')[0]
 }
 
-type Result = { status: 'up' | 'degraded' | 'down'; code: number | null; latency: number | null; error: string | null }
+type Result = { status: 'up' | 'degraded' | 'down'; code: number | null; latency: number | null; error: string | null; keepalive?: boolean }
 
 async function httpCheck(m: any, opts: { keyword?: boolean; reachable?: boolean } = {}): Promise<Result> {
   const { keyword, reachable } = opts
@@ -76,6 +79,38 @@ async function httpCheck(m: any, opts: { keyword?: boolean; reachable?: boolean 
   }
 }
 
+// Authenticated Supabase ping: a real API request with the project's anon key.
+// Counts as project activity, so free-plan projects don't get auto-paused (keep-alive),
+// and proves the API actually answers — not just that the Kong gateway is reachable.
+// Endpoint: /storage/v1/bucket — returns 200 to anon and actually reads Postgres
+// (storage.buckets under RLS). The PostgREST root /rest/v1/ is service_role-only now.
+// Fired only when due (every KEEPALIVE_MS); other cycles run the plain gateway check.
+async function supabaseAuthedCheck(base: string, m: any): Promise<Result> {
+  const t0 = performance.now()
+  const headers = { apikey: m.anon_key, Authorization: `Bearer ${m.anon_key}`, 'user-agent': 'SakeControl/1.0' }
+  try {
+    const res = await raceTimeout(
+      fetch(`${base}/storage/v1/bucket`, { headers }),
+      m.timeout_ms || 10000,
+    )
+    try { await res.body?.cancel() } catch { /* ignore */ }
+    // best-effort second touch on the Auth API so activity shows on more services
+    fetch(`${base}/auth/v1/health`, { headers }).then((r) => r.body?.cancel()).catch(() => {})
+    const latency = Math.round(performance.now() - t0)
+    const code = res.status
+    if (code === 401 || code === 403) {
+      // gateway alive but the key is wrong → the request never reaches the DB,
+      // so keep-alive is NOT working; surface it without a false "down" alert.
+      // Not stamped, so it retries every cycle until the key is fixed.
+      return { status: 'degraded', code, latency, error: 'anon key rejected — keep-alive inactive', keepalive: false }
+    }
+    if (code >= 500) return { status: 'down', code, latency, error: `HTTP ${code}`, keepalive: false }
+    return { status: latency > DEGRADED_MS ? 'degraded' : 'up', code, latency, error: null, keepalive: true }
+  } catch (e) {
+    return { status: 'down', code: null, latency: null, error: String((e as any)?.message ?? e), keepalive: false }
+  }
+}
+
 async function tcpCheck(host: string, port: number, timeout: number, tls: boolean): Promise<Result> {
   const t0 = performance.now()
   let conn: Deno.Conn | undefined
@@ -103,6 +138,9 @@ async function runCheck(m: any): Promise<Result> {
       return httpCheck(m, { keyword: true })
     case 'supabase': {
       const base = m.target.replace(/\/+$/, '')
+      const keepaliveDue = m.anon_key &&
+        (!m.last_keepalive_at || Date.now() - new Date(m.last_keepalive_at).getTime() >= KEEPALIVE_MS)
+      if (keepaliveDue) return supabaseAuthedCheck(base, m)
       return httpCheck({ ...m, target: `${base}/auth/v1/health`, method: 'GET', expected_status: null }, { reachable: true })
     }
     case 'tcp':
@@ -198,6 +236,8 @@ async function processMonitor(admin: any, m: any) {
 
   await admin.from('monitors').update({
     next_run_at: new Date(Date.now() + (m.interval_seconds || 300) * 1000).toISOString(),
+    // stamp only when the authed ping actually landed, so failures retry next cycle
+    ...(res.keepalive ? { last_keepalive_at: now.toISOString() } : {}),
   }).eq('id', m.id)
 
   // incident transitions
