@@ -552,7 +552,7 @@ export default function Landing() {
             <p className="mx-auto mt-6 max-w-xl text-[1.05rem] leading-relaxed text-muted">{L.hero.sub}</p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <button onClick={goApp} className="rounded-lg bg-accent px-6 py-3 text-[14px] font-medium text-[#06140d] shadow-[0_14px_34px_-12px_rgba(52,199,127,0.7)] transition-colors hover:bg-[#42d98c]">{L.hero.ctaPrimary}</button>
-              <button onClick={() => navigate('/login')} className="rounded-lg border border-line2 bg-surface/60 px-6 py-3 text-[14px] font-medium text-ink backdrop-blur transition-colors hover:border-muted">{L.hero.ctaSecondary}</button>
+              <button onClick={() => scrollTo('features')} className="rounded-lg border border-line2 bg-surface/60 px-6 py-3 text-[14px] font-medium text-ink backdrop-blur transition-colors hover:border-muted">{L.hero.ctaSecondary}</button>
             </div>
             <p className="mt-5 text-[12.5px] text-faint">{L.hero.note}</p>
           </div>

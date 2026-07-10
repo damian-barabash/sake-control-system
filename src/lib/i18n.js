@@ -52,10 +52,10 @@ const DICT = {
       loader: 'Собираем облако…',
       hero: {
         badge: 'Uptime-мониторинг нового поколения',
-        titleA: 'Все ваши проекты —', titleB: 'под одним небом',
-        sub: 'SAKE следит за сайтами, базами и серверами каждую минуту и пишет вам письмо за секунды — раньше, чем сбой заметит клиент.',
-        ctaPrimary: 'Попробовать 7 дней', ctaSecondary: 'Войти',
-        note: 'Без карты. 7 дней бесплатно, потом $7/мес.',
+        titleA: 'Все ваши проекты —', titleB: 'под нашим контролем.',
+        sub: 'SAKE следит за сайтами, базами данных и серверами в real-time. Мгновенное решение проблем для тебя, твоих работников и клиентов.',
+        ctaPrimary: 'Попробовать бесплатно', ctaSecondary: 'Возможности Sake',
+        note: '7 дней бесплатно без привязки карты. Потом $7/мес.',
         statusOk: 'Все системы в норме', statusDown: 'Обнаружен сбой · barabashflow.pl', statusUp: 'Восстановлено за 2 мин 14 с',
       },
       stats: { a: 'проверок в минуту', b: 'среднее время реакции', c: 'видимость аптайма' },
@@ -70,9 +70,9 @@ const DICT = {
         ],
       },
       inbox: {
-        label: 'Алерты, которые невозможно пропустить',
-        title: 'Вы узнаёте первым — по почте',
-        sub: 'Вот как выглядит входящий поток, когда что-то идёт не так. Всё в реальном времени.',
+        label: 'Алерты 24/7 — мы следим безостановочно',
+        title: 'Экстренные оповещения за мгновения',
+        sub: 'Пример входящего потока в случае проблем. Наблюдение в реальном времени — незамедлительная реакция.',
         live: 'в реальном времени', now: 'только что',
         items: [
           { tag: 'down', subject: '🔴 barabashflow.pl не отвечает', body: 'HTTP-таймаут после 3 проверок подряд. Задержка превысила 10 000 мс.' },
@@ -96,7 +96,7 @@ const DICT = {
       },
       features: {
         label: 'Возможности',
-        title: 'Мониторит всё, что у вас есть',
+        title: 'Контролируем всё',
         items: [
           { title: 'HTTP(S)', body: 'Код ответа, задержка и ключевое слово в теле страницы.' },
           { title: 'TCP-порт', body: 'Жив ли сервис на 22, 5432 или любом вашем порту.' },
@@ -117,13 +117,14 @@ const DICT = {
       },
       app: {
         label: 'Мобильное приложение',
-        title: 'Все мониторы — в кармане',
-        sub: 'Нативное приложение для iOS и Android. Тот же аккаунт, что и в вебе: статусы проектов, инциденты и проверка по тапу — где бы вы ни были.',
+        title: 'Мониторь как удобно — Sake теперь в кармане!',
+        sub: 'Нативное приложение для iOS и Android. Мультиплатформенность позволяет отслеживать всё в одном месте: статусы проектов в реальном времени, инциденты, проверка по тапу и уведомления о падениях.',
         features: [
           'Статус всех проектов с агрегатом',
           'Спарклайн latency и таймлайн инцидентов',
           'Проверка по тапу и pull-to-refresh',
-          'Тёмная и светлая темы, RU / PL / EN',
+          'Выбор темы приложения',
+          'Поддержка трёх языков RU / PL / EN',
         ],
         ios: 'Загрузить в', iosName: 'App Store',
         android: 'Доступно в', androidName: 'Google Play',
@@ -266,10 +267,10 @@ const DICT = {
       loader: 'Tworzymy chmurę…',
       hero: {
         badge: 'Monitoring uptime nowej generacji',
-        titleA: 'Wszystkie projekty —', titleB: 'pod jednym niebem',
-        sub: 'SAKE pilnuje stron, baz i serwerów co minutę i wysyła Ci maila w kilka sekund — zanim awarię zauważy klient.',
-        ctaPrimary: 'Wypróbuj 7 dni', ctaSecondary: 'Zaloguj',
-        note: 'Bez karty. 7 dni za darmo, potem $7/mies.',
+        titleA: 'Wszystkie projekty —', titleB: 'pod naszą kontrolą.',
+        sub: 'SAKE pilnuje stron, baz danych i serwerów w czasie rzeczywistym. Błyskawiczne rozwiązanie problemów dla Ciebie, Twoich pracowników i klientów.',
+        ctaPrimary: 'Wypróbuj za darmo', ctaSecondary: 'Funkcje Sake',
+        note: '7 dni za darmo bez podawania karty. Potem $7/mies.',
         statusOk: 'Wszystkie systemy sprawne', statusDown: 'Wykryto awarię · barabashflow.pl', statusUp: 'Przywrócono w 2 min 14 s',
       },
       stats: { a: 'sprawdzeń na minutę', b: 'średni czas reakcji', c: 'widoczność uptime' },
@@ -284,9 +285,9 @@ const DICT = {
         ],
       },
       inbox: {
-        label: 'Alerty nie do przeoczenia',
-        title: 'Dowiadujesz się pierwszy — mailem',
-        sub: 'Tak wygląda strumień wiadomości, gdy coś idzie nie tak. Wszystko na żywo.',
+        label: 'Alerty 24/7 — czuwamy bez przerwy',
+        title: 'Awaryjne powiadomienia w mgnieniu oka',
+        sub: 'Przykład strumienia wiadomości w razie problemów. Obserwacja w czasie rzeczywistym — natychmiastowa reakcja.',
         live: 'na żywo', now: 'przed chwilą',
         items: [
           { tag: 'down', subject: '🔴 barabashflow.pl nie odpowiada', body: 'Timeout HTTP po 3 sprawdzeniach z rzędu. Opóźnienie przekroczyło 10 000 ms.' },
@@ -310,7 +311,7 @@ const DICT = {
       },
       features: {
         label: 'Funkcje',
-        title: 'Monitoruje wszystko, co masz',
+        title: 'Kontrolujemy wszystko',
         items: [
           { title: 'HTTP(S)', body: 'Kod odpowiedzi, opóźnienie i słowo kluczowe w treści strony.' },
           { title: 'Port TCP', body: 'Czy usługa żyje na 22, 5432 lub dowolnym Twoim porcie.' },
@@ -331,13 +332,14 @@ const DICT = {
       },
       app: {
         label: 'Aplikacja mobilna',
-        title: 'Wszystkie monitory w kieszeni',
-        sub: 'Natywna aplikacja na iOS i Androida. To samo konto co w wersji web: statusy projektów, awarie i sprawdzenie jednym tapnięciem — gdziekolwiek jesteś.',
+        title: 'Monitoruj jak wygodnie — Sake teraz w kieszeni!',
+        sub: 'Natywna aplikacja na iOS i Androida. Wieloplatformowość pozwala śledzić wszystko w jednym miejscu: statusy projektów w czasie rzeczywistym, awarie, sprawdzenie jednym tapnięciem i powiadomienia o awariach.',
         features: [
           'Status wszystkich projektów ze zbiorczym widokiem',
           'Sparkline latency i oś czasu awarii',
           'Sprawdzenie jednym tapnięciem i pull-to-refresh',
-          'Tryb ciemny i jasny, RU / PL / EN',
+          'Wybór motywu aplikacji',
+          'Obsługa trzech języków RU / PL / EN',
         ],
         ios: 'Pobierz z', iosName: 'App Store',
         android: 'Pobierz z', androidName: 'Google Play',
@@ -480,10 +482,10 @@ const DICT = {
       loader: 'Forming the cloud…',
       hero: {
         badge: 'Next-gen uptime monitoring',
-        titleA: 'All your projects —', titleB: 'under one sky',
-        sub: 'SAKE watches your sites, databases and servers every minute and emails you in seconds — before your customer ever notices.',
-        ctaPrimary: 'Try 7 days free', ctaSecondary: 'Sign in',
-        note: 'No card. 7 days free, then $7/mo.',
+        titleA: 'All your projects —', titleB: 'under our control.',
+        sub: 'SAKE watches your sites, databases and servers in real time. Instant problem-solving for you, your team and your clients.',
+        ctaPrimary: 'Try it free', ctaSecondary: 'Sake features',
+        note: '7 days free, no card required. Then $7/mo.',
         statusOk: 'All systems operational', statusDown: 'Outage detected · barabashflow.pl', statusUp: 'Recovered in 2 min 14 s',
       },
       stats: { a: 'checks per minute', b: 'average time to alert', c: 'uptime visibility' },
@@ -498,9 +500,9 @@ const DICT = {
         ],
       },
       inbox: {
-        label: 'Alerts you cannot miss',
-        title: 'You hear it first — by email',
-        sub: 'Here is what the inbox looks like when something goes wrong. All in real time.',
+        label: 'Alerts 24/7 — we watch non-stop',
+        title: 'Emergency alerts in an instant',
+        sub: 'An example of the incoming stream when something goes wrong. Real-time monitoring — instant reaction.',
         live: 'live', now: 'just now',
         items: [
           { tag: 'down', subject: '🔴 barabashflow.pl is not responding', body: 'HTTP timeout after 3 checks in a row. Latency exceeded 10,000 ms.' },
@@ -524,7 +526,7 @@ const DICT = {
       },
       features: {
         label: 'Features',
-        title: 'Monitors everything you run',
+        title: 'We control everything',
         items: [
           { title: 'HTTP(S)', body: 'Response code, latency and a keyword in the page body.' },
           { title: 'TCP port', body: 'Whether the service is alive on 22, 5432 or any port you use.' },
@@ -545,13 +547,14 @@ const DICT = {
       },
       app: {
         label: 'Mobile app',
-        title: 'Every monitor in your pocket',
-        sub: 'A native app for iOS and Android. The same account as on the web: project statuses, incidents and tap-to-check — wherever you are.',
+        title: 'Monitor on your terms — Sake is now in your pocket!',
+        sub: 'A native app for iOS and Android. Cross-platform, so you can track everything in one place: project statuses in real time, incidents, tap-to-check and outage notifications.',
         features: [
           'Status of every project with a roll-up',
           'Latency sparkline and incident timeline',
           'Tap to check and pull-to-refresh',
-          'Dark & light themes, RU / PL / EN',
+          'App theme of your choice',
+          'Support for three languages RU / PL / EN',
         ],
         ios: 'Download on the', iosName: 'App Store',
         android: 'Get it on', androidName: 'Google Play',
