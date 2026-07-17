@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sake.barabashflow.pl/sitemap.xml
+Sitemap: https://sakecontrol.pl/sitemap.xml

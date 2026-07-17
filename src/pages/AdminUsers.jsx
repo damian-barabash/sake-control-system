@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useT } from '../context/LangContext'
-import { TopBar } from '../components/TopBar'
+import { AppShell } from '../components/AppShell'
 import { Modal, Field, Avatar, Spinner } from '../components/ui'
 
 // Roles a moderator may grant. Admins always create clients ('member').
@@ -179,51 +179,63 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <TopBar />
-      <main className="flex-1 max-w-4xl w-full mx-auto px-5 py-9">
-        <div className="flex items-center justify-between mb-7">
-          <h1 className="text-xl font-semibold tracking-tight">{t('admin.title')}</h1>
-          <button className="btn-solid" onClick={() => setShowCreate(true)}>
+    <AppShell
+      title={t('admin.title')}
+      actions={
+        <button className="btn-solid !py-2 hidden sm:inline-flex" onClick={() => setShowCreate(true)}>
+          + {t('admin.newUser')}
+        </button>
+      }
+    >
+      <div className="mx-auto w-full max-w-4xl">
+        <div className="mb-7 flex items-center justify-between gap-4">
+          <h1 className="font-display text-[1.45rem] font-semibold tracking-tight">{t('admin.title')}</h1>
+          <button className="btn-solid sm:hidden" onClick={() => setShowCreate(true)}>
             + {t('admin.newUser')}
           </button>
         </div>
 
         {loading ? (
-          <div className="py-24 flex justify-center">
+          <div className="flex justify-center py-24">
             <Spinner className="h-7 w-7" />
           </div>
         ) : (
-          <div className="space-y-2.5">
+          <div className="card divide-y divide-line overflow-hidden">
             {users.map((u) => {
               const isStaffRole = u.role === 'admin' || u.role === 'moderator'
               return (
-                <div key={u.id} className="card flex items-center gap-4 px-4 py-3.5">
-                  <Avatar name={u.full_name} email={u.email} size={34} />
+                <div key={u.id} className="flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-surface2/60">
+                  <Avatar name={u.full_name} email={u.email} size={36} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-ink truncate">{u.full_name || u.email}</span>
-                      <span className={`label-sm ${isStaffRole ? 'text-accent' : 'text-faint'}`}>
+                      <span className="truncate text-sm font-medium text-ink">{u.full_name || u.email}</span>
+                      <span
+                        className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                          isStaffRole
+                            ? 'border-accent/40 bg-accent/10 text-accentText'
+                            : 'border-line bg-surface2 text-faint'
+                        }`}
+                      >
                         {t('admin.roles.' + u.role)}
                       </span>
-                      {u.id === user.id && <span className="label-sm">({t('admin.you')})</span>}
+                      {u.id === user.id && <span className="text-[10.5px] text-faint">({t('admin.you')})</span>}
                     </div>
-                    <div className="text-[12px] text-faint truncate">
+                    <div className="truncate text-[12px] text-faint">
                       {u.full_name ? u.email + ' · ' : ''}
                       {(memberships[u.id] ?? []).join(', ') || (isStaffRole ? '—' : t('common.none'))}
                     </div>
                   </div>
                   {canManageUser(u) && (
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex shrink-0 items-center gap-2">
                       <button
                         onClick={() => resetPw(u)}
-                        className="font-mono uppercase tracking-label text-[9px] text-muted hover:text-ink border border-line rounded px-2 py-1 transition-colors"
+                        className="rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium text-muted transition-colors hover:bg-surface2 hover:text-ink"
                       >
                         {t('admin.resetPassword')}
                       </button>
                       <button
                         onClick={() => removeUser(u)}
-                        className="font-mono uppercase tracking-label text-[9px] text-down/80 hover:text-down border border-line rounded px-2 py-1 transition-colors"
+                        className="rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium text-down/80 transition-colors hover:bg-down/10 hover:text-down"
                       >
                         {t('admin.delete')}
                       </button>
@@ -234,7 +246,7 @@ export default function AdminUsers() {
             })}
           </div>
         )}
-      </main>
+      </div>
 
       {showCreate && (
         <CreateUserModal
@@ -245,6 +257,6 @@ export default function AdminUsers() {
           isModerator={isModerator}
         />
       )}
-    </div>
+    </AppShell>
   )
 }

@@ -10,7 +10,9 @@ const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const ANON = Deno.env.get('SUPABASE_ANON_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const FROM = Deno.env.get('NOTIFY_FROM') ?? 'Sake Control <office@barabashflow.pl>'
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://sake.barabashflow.pl'
+// NOTE: sender stays on the Resend-verified barabashflow.pl domain until
+// sakecontrol.pl is verified in Resend (then set the NOTIFY_FROM secret).
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://sakecontrol.pl'
 const CRON_KEY = Deno.env.get('CRON_KEY') // optional hardening for the scheduler path
 
 const DEGRADED_MS = 3000

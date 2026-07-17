@@ -82,13 +82,13 @@ function LiveDemo({ lang }) {
     return () => clearInterval(tm)
   }, [lang])
   const rows = [
-    { name: 'barabashflow.pl', kind: 'HTTP(S)', status: tag === 'down' ? 'down' : 'up' },
+    { name: L.incident.monitor, kind: 'HTTP(S)', status: tag === 'down' ? 'down' : 'up' },
     { name: 'Supabase · REST', kind: 'health', status: 'up' },
     { name: 'api.cert · SSL', kind: 'SSL', status: tag === 'ssl' ? 'degraded' : 'up' },
   ]
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <div className="flex min-h-[400px] flex-col rounded-2xl border border-line bg-surface/70 p-5">
+      <div className="flex h-[440px] flex-col overflow-hidden rounded-2xl border border-line bg-surface/70 p-5">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-[13px] font-medium text-ink">Dashboard</span>
           <span className="inline-flex items-center gap-1.5 text-[11px] text-faint">
@@ -97,7 +97,7 @@ function LiveDemo({ lang }) {
         </div>
         <div className="space-y-2.5">
           {rows.map((r) => (
-            <div key={r.name} className="flex min-h-[64px] items-center gap-3 rounded-xl border border-line bg-surface2 px-3.5 py-3">
+            <div key={r.name} className="flex h-[64px] items-center gap-3 overflow-hidden rounded-xl border border-line bg-surface2 px-3.5 py-3">
               <Dot status={r.status} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13.5px] font-medium text-ink">{r.name}</div>
@@ -108,23 +108,23 @@ function LiveDemo({ lang }) {
           ))}
         </div>
       </div>
-      <div className="flex min-h-[400px] flex-col rounded-2xl border border-line bg-surface/70 p-5">
+      <div className="flex h-[440px] flex-col overflow-hidden rounded-2xl border border-line bg-surface/70 p-5">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-[13px] font-medium text-ink">Inbox</span>
-          <span className="text-[11px] text-faint">office@barabashflow.pl</span>
+          <span className="text-[11px] text-faint">{L.inbox.address}</span>
         </div>
         <div className="space-y-2.5">
           {feed.map((m, idx) => {
             const c = MAIL[m.tag]
             return (
-              <div key={m.id} className={`${idx === 0 ? 'lp-emailin' : ''} flex min-h-[72px] gap-3 rounded-xl border px-3.5 py-3`} style={{ background: c.tint, borderColor: c.bd }}>
+              <div key={m.id} className={`${idx === 0 ? 'lp-emailin' : ''} flex h-[84px] gap-3 overflow-hidden rounded-xl border px-3.5 py-3`} style={{ background: c.tint, borderColor: c.bd }}>
                 <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: c.dot }} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
                     <div className="truncate text-[13.5px] font-semibold text-ink">{m.subject}</div>
                     <span className="shrink-0 text-[10px] text-faint">{L.inbox.now}</span>
                   </div>
-                  <p className="mt-0.5 text-[12.5px] leading-snug text-muted">{m.body}</p>
+                  <p className="lp-clamp2 mt-0.5 text-[12.5px] leading-snug text-muted">{m.body}</p>
                 </div>
               </div>
             )
@@ -705,6 +705,11 @@ export default function Landing() {
             <div className="flex items-center gap-2.5">
               <img src="./logo.png" alt="Sake" className="h-7 w-7" />
               <span className="text-[13px] text-muted">{L.footer.tagline}</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+              <a href="/privacy/" className="text-[12px] text-faint transition-colors hover:text-ink">{L.footer.privacy}</a>
+              <a href="/refund/" className="text-[12px] text-faint transition-colors hover:text-ink">{L.footer.refund}</a>
+              <a href="mailto:dbdcstudio@gmail.com" className="text-[12px] text-faint transition-colors hover:text-ink">{L.footer.contact}</a>
             </div>
             <span className="text-[12px] text-faint">© MMXXVI · {L.footer.rights}</span>
           </div>

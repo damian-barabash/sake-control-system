@@ -55,7 +55,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="office@barabashflow.pl"
+                placeholder="email@example.com"
                 className="field-box"
               />
             </div>

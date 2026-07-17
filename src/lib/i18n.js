@@ -56,7 +56,7 @@ const DICT = {
         sub: 'SAKE следит за сайтами, базами данных и серверами в real-time. Мгновенное решение проблем для тебя, твоих работников и клиентов.',
         ctaPrimary: 'Попробовать бесплатно', ctaSecondary: 'Возможности Sake',
         note: '7 дней бесплатно без привязки карты. Потом $7/мес.',
-        statusOk: 'Все системы в норме', statusDown: 'Обнаружен сбой · barabashflow.pl', statusUp: 'Восстановлено за 2 мин 14 с',
+        statusOk: 'Все системы в норме', statusDown: 'Обнаружен сбой · вашпроект.pl', statusUp: 'Восстановлено за 2 мин 14 с',
       },
       stats: { a: 'проверок в минуту', b: 'среднее время реакции', c: 'видимость аптайма' },
       why: {
@@ -73,11 +73,11 @@ const DICT = {
         label: 'Алерты 24/7 — мы следим безостановочно',
         title: 'Экстренные оповещения за мгновения',
         sub: 'Пример входящего потока в случае проблем. Наблюдение в реальном времени — незамедлительная реакция.',
-        live: 'в реальном времени', now: 'только что',
+        live: 'в реальном времени', now: 'только что', address: 'office@vashafirma.ru',
         items: [
-          { tag: 'down', subject: '🔴 barabashflow.pl не отвечает', body: 'HTTP-таймаут после 3 проверок подряд. Задержка превысила 10 000 мс.' },
+          { tag: 'down', subject: '🔴 вашпроект.pl не отвечает', body: 'HTTP-таймаут после 3 проверок подряд. Задержка превысила 10 000 мс.' },
           { tag: 'ssl', subject: '🟡 SSL истекает через 14 дней', body: 'Сертификат api.вашпроект.pl истекает 1 июля. Пора продлить.' },
-          { tag: 'up', subject: '🟢 barabashflow.pl снова в строю', body: 'Сервис восстановлен. Простой составил 2 мин 14 сек.' },
+          { tag: 'up', subject: '🟢 вашпроект.pl снова в строю', body: 'Сервис восстановлен. Простой составил 2 мин 14 сек.' },
         ],
       },
       incident: {
@@ -85,7 +85,7 @@ const DICT = {
         title: 'Вот что происходит, когда что-то падает',
         sub: 'SAKE ловит сбой за секунды и зовёт на помощь. Смотрите — туча краснеет, как только сервис перестаёт отвечать.',
         operational: 'Работает', outage: 'СБОЙ', recovering: 'Восстановление…', recovered: 'Восстановлено за 2:14',
-        monitor: 'barabashflow.pl', reason: 'HTTP-таймаут · 3 фейла подряд', sent: 'Письмо ушло на office@barabashflow.pl', downtime: 'Простой',
+        monitor: 'вашпроект.pl', reason: 'HTTP-таймаут · 3 фейла подряд', sent: 'Письмо ушло на office@vashafirma.ru', downtime: 'Простой',
         steps: ['Обнаружено', 'Письмо отправлено', 'Восстановлено'],
       },
       pulse: {
@@ -131,7 +131,7 @@ const DICT = {
         soon: 'Скоро',
         phoneTitle: 'Мои проекты',
         rows: [
-          { name: 'barabashflow.pl', kind: 'HTTP · 84 мс', status: 'up' },
+          { name: 'вашпроект.pl', kind: 'HTTP · 84 мс', status: 'up' },
           { name: 'Supabase · REST', kind: 'health · 96 мс', status: 'up' },
           { name: 'api.cert · SSL', kind: 'осталось 14 дней', status: 'degraded' },
           { name: 'hetzner · :5432', kind: 'таймаут', status: 'down' },
@@ -178,7 +178,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Перестаньте узнавать о сбоях от клиентов', sub: 'Поднимите свой первый монитор за пару минут.', button: 'Создать аккаунт' },
-      footer: { tagline: 'Облако, которое не спит.', rights: 'Часть экосистемы barabashflow.pl' },
+      footer: { tagline: 'Облако, которое не спит.', rights: 'Часть экосистемы DBDC Studio', privacy: 'Политика конфиденциальности', refund: 'Политика возвратов', contact: 'Контакт' },
     },
     topbar: { lang: 'Язык', signout: 'Выйти', admin: 'admin', projects: 'Проекты', users: 'Пользователи', menu: 'Меню' },
     projects: {
@@ -271,7 +271,7 @@ const DICT = {
         sub: 'SAKE pilnuje stron, baz danych i serwerów w czasie rzeczywistym. Błyskawiczne rozwiązanie problemów dla Ciebie, Twoich pracowników i klientów.',
         ctaPrimary: 'Wypróbuj za darmo', ctaSecondary: 'Funkcje Sake',
         note: '7 dni za darmo bez podawania karty. Potem $7/mies.',
-        statusOk: 'Wszystkie systemy sprawne', statusDown: 'Wykryto awarię · barabashflow.pl', statusUp: 'Przywrócono w 2 min 14 s',
+        statusOk: 'Wszystkie systemy sprawne', statusDown: 'Wykryto awarię · twojprojekt.pl', statusUp: 'Przywrócono w 2 min 14 s',
       },
       stats: { a: 'sprawdzeń na minutę', b: 'średni czas reakcji', c: 'widoczność uptime' },
       why: {
@@ -288,11 +288,11 @@ const DICT = {
         label: 'Alerty 24/7 — czuwamy bez przerwy',
         title: 'Awaryjne powiadomienia w mgnieniu oka',
         sub: 'Przykład strumienia wiadomości w razie problemów. Obserwacja w czasie rzeczywistym — natychmiastowa reakcja.',
-        live: 'na żywo', now: 'przed chwilą',
+        live: 'na żywo', now: 'przed chwilą', address: 'biuro@twojafirma.pl',
         items: [
-          { tag: 'down', subject: '🔴 barabashflow.pl nie odpowiada', body: 'Timeout HTTP po 3 sprawdzeniach z rzędu. Opóźnienie przekroczyło 10 000 ms.' },
+          { tag: 'down', subject: '🔴 twojprojekt.pl nie odpowiada', body: 'Timeout HTTP po 3 sprawdzeniach z rzędu. Opóźnienie przekroczyło 10 000 ms.' },
           { tag: 'ssl', subject: '🟡 SSL wygasa za 14 dni', body: 'Certyfikat api.twojprojekt.pl wygasa 1 lipca. Czas odnowić.' },
-          { tag: 'up', subject: '🟢 barabashflow.pl znów działa', body: 'Usługa przywrócona. Przestój wyniósł 2 min 14 s.' },
+          { tag: 'up', subject: '🟢 twojprojekt.pl znów działa', body: 'Usługa przywrócona. Przestój wyniósł 2 min 14 s.' },
         ],
       },
       incident: {
@@ -300,7 +300,7 @@ const DICT = {
         title: 'Oto co się dzieje, gdy coś pada',
         sub: 'SAKE łapie awarię w sekundy i wzywa pomoc. Patrz — chmura czerwienieje, gdy tylko usługa przestaje odpowiadać.',
         operational: 'Działa', outage: 'AWARIA', recovering: 'Przywracanie…', recovered: 'Przywrócono w 2:14',
-        monitor: 'barabashflow.pl', reason: 'Timeout HTTP · 3 błędy z rzędu', sent: 'Mail poszedł na office@barabashflow.pl', downtime: 'Przestój',
+        monitor: 'twojprojekt.pl', reason: 'Timeout HTTP · 3 błędy z rzędu', sent: 'Mail poszedł na biuro@twojafirma.pl', downtime: 'Przestój',
         steps: ['Wykryto', 'Mail wysłany', 'Przywrócono'],
       },
       pulse: {
@@ -346,7 +346,7 @@ const DICT = {
         soon: 'Wkrótce',
         phoneTitle: 'Moje projekty',
         rows: [
-          { name: 'barabashflow.pl', kind: 'HTTP · 84 ms', status: 'up' },
+          { name: 'twojprojekt.pl', kind: 'HTTP · 84 ms', status: 'up' },
           { name: 'Supabase · REST', kind: 'health · 96 ms', status: 'up' },
           { name: 'api.cert · SSL', kind: 'zostało 14 dni', status: 'degraded' },
           { name: 'hetzner · :5432', kind: 'timeout', status: 'down' },
@@ -393,7 +393,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Przestań dowiadywać się o awariach od klientów', sub: 'Postaw pierwszy monitor w kilka minut.', button: 'Utwórz konto' },
-      footer: { tagline: 'Chmura, która nie śpi.', rights: 'Część ekosystemu barabashflow.pl' },
+      footer: { tagline: 'Chmura, która nie śpi.', rights: 'Część ekosystemu DBDC Studio', privacy: 'Polityka prywatności', refund: 'Polityka zwrotów', contact: 'Kontakt' },
     },
     topbar: { lang: 'Język', signout: 'Wyloguj', admin: 'admin', projects: 'Projekty', users: 'Użytkownicy', menu: 'Menu' },
     projects: {
@@ -486,7 +486,7 @@ const DICT = {
         sub: 'SAKE watches your sites, databases and servers in real time. Instant problem-solving for you, your team and your clients.',
         ctaPrimary: 'Try it free', ctaSecondary: 'Sake features',
         note: '7 days free, no card required. Then $7/mo.',
-        statusOk: 'All systems operational', statusDown: 'Outage detected · barabashflow.pl', statusUp: 'Recovered in 2 min 14 s',
+        statusOk: 'All systems operational', statusDown: 'Outage detected · yourproject.com', statusUp: 'Recovered in 2 min 14 s',
       },
       stats: { a: 'checks per minute', b: 'average time to alert', c: 'uptime visibility' },
       why: {
@@ -503,11 +503,11 @@ const DICT = {
         label: 'Alerts 24/7 — we watch non-stop',
         title: 'Emergency alerts in an instant',
         sub: 'An example of the incoming stream when something goes wrong. Real-time monitoring — instant reaction.',
-        live: 'live', now: 'just now',
+        live: 'live', now: 'just now', address: 'office@yourcompany.com',
         items: [
-          { tag: 'down', subject: '🔴 barabashflow.pl is not responding', body: 'HTTP timeout after 3 checks in a row. Latency exceeded 10,000 ms.' },
-          { tag: 'ssl', subject: '🟡 SSL expires in 14 days', body: 'The certificate for api.yourproject.pl expires on July 1. Time to renew.' },
-          { tag: 'up', subject: '🟢 barabashflow.pl is back up', body: 'Service recovered. Downtime was 2 min 14 sec.' },
+          { tag: 'down', subject: '🔴 yourproject.com is not responding', body: 'HTTP timeout after 3 checks in a row. Latency exceeded 10,000 ms.' },
+          { tag: 'ssl', subject: '🟡 SSL expires in 14 days', body: 'The certificate for api.yourproject.com expires on July 1. Time to renew.' },
+          { tag: 'up', subject: '🟢 yourproject.com is back up', body: 'Service recovered. Downtime was 2 min 14 sec.' },
         ],
       },
       incident: {
@@ -515,7 +515,7 @@ const DICT = {
         title: 'Here is what happens when something breaks',
         sub: 'SAKE catches the failure in seconds and calls for help. Watch — the cloud turns red the moment a service stops responding.',
         operational: 'Operational', outage: 'OUTAGE', recovering: 'Recovering…', recovered: 'Recovered in 2:14',
-        monitor: 'barabashflow.pl', reason: 'HTTP timeout · 3 fails in a row', sent: 'Email sent to office@barabashflow.pl', downtime: 'Downtime',
+        monitor: 'yourproject.com', reason: 'HTTP timeout · 3 fails in a row', sent: 'Email sent to office@yourcompany.com', downtime: 'Downtime',
         steps: ['Detected', 'Email sent', 'Recovered'],
       },
       pulse: {
@@ -561,7 +561,7 @@ const DICT = {
         soon: 'Soon',
         phoneTitle: 'My projects',
         rows: [
-          { name: 'barabashflow.pl', kind: 'HTTP · 84 ms', status: 'up' },
+          { name: 'yourproject.com', kind: 'HTTP · 84 ms', status: 'up' },
           { name: 'Supabase · REST', kind: 'health · 96 ms', status: 'up' },
           { name: 'api.cert · SSL', kind: '14 days left', status: 'degraded' },
           { name: 'hetzner · :5432', kind: 'timeout', status: 'down' },
@@ -608,7 +608,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Stop hearing about outages from your customers', sub: 'Bring up your first monitor in a couple of minutes.', button: 'Create account' },
-      footer: { tagline: 'A cloud that never sleeps.', rights: 'Part of the barabashflow.pl ecosystem' },
+      footer: { tagline: 'A cloud that never sleeps.', rights: 'Part of the DBDC Studio ecosystem', privacy: 'Privacy Policy', refund: 'Refund Policy', contact: 'Contact' },
     },
     topbar: { lang: 'Language', signout: 'Sign out', admin: 'admin', projects: 'Projects', users: 'Users', menu: 'Menu' },
     projects: {

@@ -28,11 +28,15 @@ export function StatusBadge({ status = 'unknown', size = 'md' }) {
   const { t } = useT()
   const key = MSTATUS[status] ? status : 'unknown'
   const s = MSTATUS[key]
-  const pad = size === 'sm' ? 'px-2 py-0.5 text-[9px]' : 'px-2.5 py-1 text-[10px]'
+  const pad = size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]'
+  const rgba = (hex, a) => {
+    const n = parseInt(hex.slice(1), 16)
+    return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`
+  }
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border border-line font-mono uppercase tracking-label ${pad}`}
-      style={{ color: s.text }}
+      className={`inline-flex items-center gap-1.5 rounded-full border font-medium ${pad}`}
+      style={{ color: s.text, borderColor: rgba(s.dot, 0.35), background: rgba(s.dot, 0.1) }}
     >
       <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: s.dot }} />
       {t('enum.mstatus.' + key)}
@@ -86,9 +90,9 @@ export function Toggle({ checked, onChange, label }) {
 
 export function EmptyState({ title, hint, children }) {
   return (
-    <div className="brackets relative mx-auto max-w-md px-10 py-16 text-center">
-      <div className="font-mono uppercase tracking-label text-[11px] text-muted">{title}</div>
-      {hint && <p className="mt-3 text-sm text-faint">{hint}</p>}
+    <div className="relative mx-auto max-w-md rounded-2xl border border-dashed border-line2 px-10 py-16 text-center">
+      <div className="text-[14px] font-medium text-ink">{title}</div>
+      {hint && <p className="mt-2.5 text-sm text-faint">{hint}</p>}
       {children && <div className="mt-6 flex justify-center">{children}</div>}
     </div>
   )
@@ -103,11 +107,11 @@ export function Modal({ open, onClose, title, children, width = 'max-w-lg' }) {
       onMouseDown={onClose}
     >
       <div
-        className={`brackets relative w-full ${width} rounded-xl2 border border-line bg-surface p-7`}
+        className={`relative w-full ${width} rounded-2xl border border-line bg-surface p-7 shadow-[0_40px_90px_-40px_rgba(0,0,0,0.7)]`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-mono uppercase tracking-label text-[12px] text-ink">{title}</h2>
+          <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
           <button
             onClick={onClose}
             className="font-mono text-faint hover:text-ink transition-colors"
