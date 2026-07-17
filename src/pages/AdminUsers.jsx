@@ -188,7 +188,7 @@ export default function AdminUsers() {
       }
     >
       <div className="mx-auto w-full max-w-4xl">
-        <div className="mb-7 flex items-center justify-between gap-4">
+        <div className="a-in mb-7 flex items-center justify-between gap-4">
           <h1 className="font-display text-[1.45rem] font-semibold tracking-tight">{t('admin.title')}</h1>
           <button className="btn-solid sm:hidden" onClick={() => setShowCreate(true)}>
             + {t('admin.newUser')}
@@ -200,7 +200,7 @@ export default function AdminUsers() {
             <Spinner className="h-7 w-7" />
           </div>
         ) : (
-          <div className="card divide-y divide-line overflow-hidden">
+          <div className="card a-in divide-y divide-line overflow-hidden" style={{ animationDelay: '90ms' }}>
             {users.map((u) => {
               const isStaffRole = u.role === 'admin' || u.role === 'moderator'
               return (

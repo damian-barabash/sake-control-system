@@ -143,6 +143,44 @@ input:-webkit-autofill:focus {
   animation: pulsedot 1.8s ease-in-out infinite;
 }
 
+/* ---------- Panel animations ---------- */
+/* staggered card/tile entrance (set animation-delay inline for the stagger) */
+@keyframes aIn {
+  0% { opacity: 0; transform: translateY(14px) scale(0.985); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.a-in { animation: aIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* route-level content fade (keyed by pathname in AppShell) */
+@keyframes pageIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.page-in { animation: pageIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* mobile drawer slide-in + overlay fade */
+@keyframes drawerIn {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+.drawer-in { animation: drawerIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.fade-in { animation: fadeIn 0.28s ease both; }
+
+/* modal pop-in */
+@keyframes modalIn {
+  0% { opacity: 0; transform: translateY(16px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-in { animation: modalIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .a-in, .page-in, .drawer-in, .fade-in, .modal-in { animation: none; }
+}
+
 /* ---------- Landing (light theme) animations ---------- */
 @keyframes lpFloat {
   0%, 100% { transform: translateY(0); }

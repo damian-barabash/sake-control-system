@@ -6,6 +6,7 @@ import { dict } from '../lib/i18n'
 import { LangSwitch } from '../components/LangSwitch'
 import { ThemeToggle } from '../components/ThemeToggle'
 import GridBackground from '../landing/GridBackground'
+import { EnterpriseModal } from '../components/EnterpriseModal'
 
 const STATUS = { up: '#34C77F', down: '#E2564A', degraded: '#E3B341' }
 const MAIL = {
@@ -426,6 +427,7 @@ export default function Landing() {
   const [faqOpen, setFaqOpen] = useState(0)
   const [incident, setIncident] = useState('ok')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [entOpen, setEntOpen] = useState(false)
   const incidentRef = useRef(null)
 
   useEffect(() => {
@@ -642,7 +644,8 @@ export default function Landing() {
             </div>
             {yearly && <div className="mt-3 text-center text-[12.5px] text-accentText">{L.pricing.save}</div>}
 
-            <div className="mx-auto mt-10 max-w-md">
+            <div className="mx-auto mt-10 grid max-w-4xl items-stretch gap-5 md:grid-cols-2">
+              {/* Pro */}
               <div className="relative flex flex-col rounded-2xl border-2 border-accent bg-surface p-8 shadow-[0_30px_70px_-40px_rgba(52,199,127,0.6)]">
                 <span className="absolute -top-3 left-8 rounded-full bg-accent px-3 py-1 text-[11px] font-medium text-[#06140d]">{L.pricing.trial}</span>
                 <div className="flex items-baseline justify-between">
@@ -658,8 +661,33 @@ export default function Landing() {
                     <li key={f} className="flex items-center gap-2.5"><span className="text-accent">✓</span> {f}</li>
                   ))}
                 </ul>
-                <button onClick={goApp} className="mt-8 w-full rounded-lg bg-accent py-3 text-[14px] font-medium text-[#06140d] transition-colors hover:bg-[#42d98c]">{L.pricing.pro.cta}</button>
+                <button onClick={goApp} className="mt-auto pt-8">
+                  <span className="block w-full rounded-lg bg-accent py-3 text-center text-[14px] font-medium text-[#06140d] transition-colors hover:bg-[#42d98c]">{L.pricing.pro.cta}</span>
+                </button>
                 <p className="mt-4 text-center text-[12px] text-faint">{L.pricing.trialNote}</p>
+              </div>
+
+              {/* Enterprise (negotiable, custom checks/integrations) */}
+              <div className="relative flex flex-col overflow-hidden rounded-2xl border border-line2 p-8" style={{ background: 'linear-gradient(160deg, rgba(52,199,127,0.16) 0%, rgb(var(--c-surface)) 42%)' }}>
+                <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(52,199,127,0.28)_0%,rgba(52,199,127,0)_70%)]" />
+                <div className="flex items-baseline justify-between">
+                  <div className="font-display text-[15px] font-semibold text-ink">{L.pricing.ent.name}</div>
+                  <div className="text-[12px] text-faint">{L.pricing.ent.badge}</div>
+                </div>
+                <div className="mt-4 flex items-end gap-2">
+                  <span className="font-display text-4xl font-semibold">{L.pricing.ent.price}</span>
+                </div>
+                <p className="mt-1 text-[12px] text-faint">{L.pricing.ent.priceNote}</p>
+                <p className="mt-4 text-[14px] leading-relaxed text-muted">{L.pricing.ent.lead}</p>
+                <ul className="mt-5 space-y-3 text-[14px] text-ink">
+                  {L.pricing.ent.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5"><span className="mt-0.5 text-accent">✓</span> {f}</li>
+                  ))}
+                </ul>
+                <button onClick={() => setEntOpen(true)} className="mt-auto pt-8">
+                  <span className="block w-full rounded-lg border border-accent/60 py-3 text-center text-[14px] font-medium text-accentText transition-colors hover:bg-accent/10">{L.pricing.ent.cta}</span>
+                </button>
+                <p className="mt-4 text-center text-[12px] text-faint">{L.pricing.ent.note}</p>
               </div>
             </div>
           </div>
@@ -715,6 +743,9 @@ export default function Landing() {
           </div>
         </footer>
       </div>
+
+      {/* Enterprise inquiry form (opened from the Enterprise plan CTA) */}
+      <EnterpriseModal open={entOpen} onClose={() => setEntOpen(false)} />
     </div>
   )
 }

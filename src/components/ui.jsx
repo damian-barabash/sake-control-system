@@ -103,11 +103,11 @@ export function Modal({ open, onClose, title, children, width = 'max-w-lg' }) {
   if (!open) return null
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 px-4 py-12 backdrop-blur-sm"
+      className="fade-in fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 px-4 py-12 backdrop-blur-sm"
       onMouseDown={onClose}
     >
       <div
-        className={`relative w-full ${width} rounded-2xl border border-line bg-surface p-7 shadow-[0_40px_90px_-40px_rgba(0,0,0,0.7)]`}
+        className={`modal-in relative w-full ${width} rounded-2xl border border-line bg-surface p-7 shadow-[0_40px_90px_-40px_rgba(0,0,0,0.7)]`}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="mb-6 flex items-center justify-between">

@@ -11,6 +11,7 @@ import { Avatar } from './ui'
 const PATHS = {
   grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
   users: 'M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M9.5 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75',
+  inbox: 'M22 12h-6l-2 3h-4l-2-3H2M5.5 5h13L22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z',
   logout: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9',
 }
 export function Ico({ name, className = 'h-[18px] w-[18px]' }) {
@@ -41,7 +42,7 @@ function NavItem({ to, end, icon, children }) {
 }
 
 function SidebarContent({ onNavigate }) {
-  const { profile, user, isStaff, role, signOut } = useAuth()
+  const { profile, user, isStaff, isModerator, role, signOut } = useAuth()
   const { t } = useT()
   const name = profile?.full_name || profile?.email || user?.email
 
@@ -61,6 +62,7 @@ function SidebarContent({ onNavigate }) {
         <div className="label px-1.5 pb-2 pt-1">{t('topbar.menu')}</div>
         <NavItem to="/app" end icon="grid">{t('topbar.projects')}</NavItem>
         {isStaff && <NavItem to="/users" icon="users">{t('topbar.users')}</NavItem>}
+        {isModerator && <NavItem to="/inquiries" icon="inbox">{t('topbar.inquiries')}</NavItem>}
       </nav>
 
       {/* footer controls */}
@@ -117,8 +119,8 @@ export function AppShell({ title, crumb, actions, children, wide = false }) {
       {/* mobile drawer */}
       {drawer && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/55 backdrop-blur-sm lg:hidden" onClick={() => setDrawer(false)} />
-          <aside className="fixed inset-y-0 left-0 z-50 w-72 border-r border-line bg-surface shadow-2xl lg:hidden">
+          <div className="fade-in fixed inset-0 z-40 bg-black/55 backdrop-blur-sm lg:hidden" onClick={() => setDrawer(false)} />
+          <aside className="drawer-in fixed inset-y-0 left-0 z-50 w-72 border-r border-line bg-surface shadow-2xl lg:hidden">
             <SidebarContent onNavigate={() => setDrawer(false)} />
           </aside>
         </>
@@ -170,7 +172,8 @@ export function AppShell({ title, crumb, actions, children, wide = false }) {
         </div>
       </header>
 
-      <main className={`relative z-10 mx-auto w-full px-4 py-7 sm:px-6 sm:py-8 ${wide ? '' : 'max-w-6xl'}`}>
+      {/* keyed by route so navigation gets a soft content fade */}
+      <main key={location.pathname} className={`page-in relative z-10 mx-auto w-full px-4 py-7 sm:px-6 sm:py-8 ${wide ? '' : 'max-w-6xl'}`}>
         {children}
       </main>
     </div>

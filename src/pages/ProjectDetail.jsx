@@ -216,7 +216,7 @@ export default function ProjectDetail() {
             {t('project.back')}
           </Link>
 
-          <div className="mb-7 mt-3 flex flex-wrap items-start justify-between gap-4">
+          <div className="a-in mb-7 mt-3 flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="font-display text-[1.45rem] font-semibold tracking-tight">{project.name}</h1>
               {project.description && <p className="mt-1 text-sm text-faint">{project.description}</p>}
@@ -247,22 +247,23 @@ export default function ProjectDetail() {
             </EmptyState>
           ) : (
             <div className="space-y-3">
-              {monitors.map((m) => (
-                <MonitorRow
-                  key={m.id}
-                  monitor={m}
-                  history={history[m.id] ?? []}
-                  canManage={canManage}
-                  onEdit={(mon) => setMonitorForm({ monitor: mon })}
-                  onDelete={deleteMonitor}
-                  onReload={load}
-                />
+              {monitors.map((m, i) => (
+                <div key={m.id} className="a-in" style={{ animationDelay: `${Math.min(i, 8) * 70}ms` }}>
+                  <MonitorRow
+                    monitor={m}
+                    history={history[m.id] ?? []}
+                    canManage={canManage}
+                    onEdit={(mon) => setMonitorForm({ monitor: mon })}
+                    onDelete={deleteMonitor}
+                    onReload={load}
+                  />
+                </div>
               ))}
             </div>
           )}
 
           {/* incidents */}
-          <div className="mt-10">
+          <div className="a-in mt-10" style={{ animationDelay: '260ms' }}>
             <h2 className="mb-3 text-[13px] font-semibold text-ink">{t('project.incidents')}</h2>
             {incidents.length === 0 ? (
               <p className="text-sm text-faint">{t('project.noIncidents')}</p>

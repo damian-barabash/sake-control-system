@@ -9,6 +9,7 @@ import Register from './pages/Register'
 import Projects from './pages/Projects'
 import ProjectDetail from './pages/ProjectDetail'
 import AdminUsers from './pages/AdminUsers'
+import Inquiries from './pages/Inquiries'
 
 export default function App() {
   return (
@@ -55,6 +56,14 @@ export default function App() {
               element={
                 <Protected staffOnly>
                   <AdminUsers />
+                </Protected>
+              }
+            />
+            <Route
+              path="/inquiries"
+              element={
+                <Protected moderatorOnly>
+                  <Inquiries />
                 </Protected>
               }
             />
