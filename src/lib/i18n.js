@@ -21,7 +21,6 @@ const DICT = {
     enum: {
       mstatus: { up: 'Работает', degraded: 'Деградация', down: 'Не работает', unknown: 'Нет данных' },
       mtype: { http: 'HTTP(S)', tcp: 'TCP-порт', ssl: 'SSL-сертификат', keyword: 'Ключевое слово', ping: 'Ping (ICMP)', supabase: 'Supabase' },
-      executor: { cloud: 'Облако', mac: 'Mac-агент' },
     },
     common: {
       email: 'Email', password: 'Пароль', cancel: 'Отмена', save: 'Сохранить', create: 'Создать',
@@ -48,7 +47,7 @@ const DICT = {
       successTitle: 'Почти готово', checkEmail: 'Подтвердите адрес по ссылке в письме.', successCta: 'К входу',
     },
     landing: {
-      nav: { features: 'Возможности', how: 'Как работает', app: 'Приложение', keepalive: 'Keep-alive', pricing: 'Цены', faq: 'Вопросы', login: 'Войти', signup: 'Начать бесплатно' },
+      nav: { features: 'Возможности', dashboard: 'Дашборд', how: 'Как работает', app: 'Приложение', keepalive: 'Keep-alive', pricing: 'Цены', faq: 'Вопросы', login: 'Войти', signup: 'Начать бесплатно' },
       loader: 'Собираем облако…',
       hero: {
         badge: 'Uptime-мониторинг нового поколения',
@@ -105,6 +104,25 @@ const DICT = {
           { title: 'Аптайм и latency', body: 'Процент аптайма за 24ч / 7д / 30д и спарклайн задержки.' },
           { title: 'Инциденты', body: 'Когда упал, сколько лежал, когда восстановился — полный таймлайн.' },
         ],
+      },
+      dashboard: {
+        label: 'Панель управления',
+        title: 'Дашборд, который видит всё',
+        sub: 'Профессиональная аналитика на главном экране панели: живые KPI, распределение статусов, график задержки, лента инцидентов и SSL-надзор — вся инфраструктура на одном экране.',
+        bullets: [
+          { title: 'Живые KPI', body: 'Проекты, мониторы, аптайм за 24 часа и инциденты за неделю — счётчики обновляются сами.' },
+          { title: 'Мониторы по статусу', body: 'Диаграмма раскладывает инфраструктуру: работает, деградация, не работает.' },
+          { title: 'График задержки · 24ч', body: 'Средняя и текущая задержка всех проверок за сутки на плавном графике.' },
+          { title: 'Лента инцидентов', body: 'Последние падения и восстановления всех проектов с длительностью простоя.' },
+          { title: 'SSL-надзор', body: 'Сертификаты с истекающим сроком сами поднимаются наверх списка.' },
+          { title: 'Поиск и фильтры', body: 'Мгновенный поиск по проектам и фильтр «только с проблемами».' },
+        ],
+        demo: {
+          projects: 'Проекты', monitors: 'Мониторы', uptime: 'Аптайм · 24ч', incidents: 'Инциденты · 7 дн',
+          split: 'Мониторы по статусу', latency: 'Задержка · 24 часа', avg: 'средняя', now: 'сейчас', total: 'всего',
+          feed: 'Последние инциденты', ssl: 'SSL-сертификаты',
+          resolved: 'восстановлен за 2 мин', ongoing: 'лежит 1 мин', days: '{n} дн',
+        },
       },
       how: {
         label: 'Как это работает',
@@ -204,6 +222,10 @@ const DICT = {
     overview: {
       title: 'Обзор', monitorsSplit: 'Мониторы по статусу', latency: 'Задержка · 24 часа',
       avg: 'средняя', now: 'сейчас', total: 'всего', noData: 'Пока нет данных проверок',
+      uptime24: 'Аптайм · 24ч', incidents7: 'Инциденты · 7 дн', checks24: '{n} проверок за 24ч',
+      incidentsFeed: 'Последние инциденты', incidentsEmpty: 'Инцидентов не было — всё стабильно',
+      sslWatch: 'SSL-сертификаты', sslEmpty: 'Нет мониторов с SSL', sslDays: '{n} дн',
+      slowest: 'Топ по задержке', slowestEmpty: 'Пока нет данных о задержке',
     },
     inquiries: {
       title: 'Заявки', heading: 'Enterprise-заявки',
@@ -218,6 +240,8 @@ const DICT = {
       emptyHint: 'Добавьте проект и привяжите к нему мониторы — сайт, базу, сервер.',
       newProject: 'Новый проект', monitors: '{n} монит.', allUp: 'всё работает',
       issues: '{n} с проблемой', noMonitors: 'нет мониторов', updated: 'обновлено',
+      search: 'Поиск проекта…', fAll: 'Все', fIssues: 'Проблемы', fUp: 'Работает', fUnknown: 'Без данных',
+      noMatch: 'Ничего не найдено — измените поиск или фильтр.',
     },
     project: {
       back: '← К проектам', monitors: 'Мониторы', addMonitor: 'Добавить монитор',
@@ -234,7 +258,7 @@ const DICT = {
       target: 'Адрес / хост', targetHintHttp: 'https://example.com', targetHintTcp: 'host.example.com',
       port: 'Порт', method: 'HTTP-метод', expectedStatus: 'Ожидаемый код', keyword: 'Искомое слово в ответе',
       interval: 'Интервал (сек)', timeout: 'Таймаут (мс)', sslWarnDays: 'Предупредить за N дней до истечения SSL',
-      executor: 'Где проверять', enabled: 'Включён',
+      enabled: 'Включён',
       anonKey: 'Anon / publishable key (опционально)',
       anonKeyHint: 'С ключом монитор раз в 3 дня делает настоящий API-запрос в базу — Supabase считает это активностью, и бесплатный проект не ставится на паузу (keep-alive). Где взять ключ: supabase.com/dashboard → ваш проект → ⚙ Project Settings → API Keys → скопируйте «anon public» (или Publishable key).',
       deleteConfirm: 'Удалить монитор «{name}»?',
@@ -269,7 +293,6 @@ const DICT = {
     enum: {
       mstatus: { up: 'Działa', degraded: 'Spowolnienie', down: 'Nie działa', unknown: 'Brak danych' },
       mtype: { http: 'HTTP(S)', tcp: 'Port TCP', ssl: 'Certyfikat SSL', keyword: 'Słowo kluczowe', ping: 'Ping (ICMP)', supabase: 'Supabase' },
-      executor: { cloud: 'Chmura', mac: 'Agent Mac' },
     },
     common: {
       email: 'Email', password: 'Hasło', cancel: 'Anuluj', save: 'Zapisz', create: 'Utwórz',
@@ -295,7 +318,7 @@ const DICT = {
       successTitle: 'Prawie gotowe', checkEmail: 'Potwierdź adres linkiem z maila.', successCta: 'Do logowania',
     },
     landing: {
-      nav: { features: 'Funkcje', how: 'Jak działa', app: 'Aplikacja', keepalive: 'Keep-alive', pricing: 'Cennik', faq: 'Pytania', login: 'Zaloguj', signup: 'Zacznij za darmo' },
+      nav: { features: 'Funkcje', dashboard: 'Panel', how: 'Jak działa', app: 'Aplikacja', keepalive: 'Keep-alive', pricing: 'Cennik', faq: 'Pytania', login: 'Zaloguj', signup: 'Zacznij za darmo' },
       loader: 'Tworzymy chmurę…',
       hero: {
         badge: 'Monitoring uptime nowej generacji',
@@ -352,6 +375,25 @@ const DICT = {
           { title: 'Uptime i latency', body: 'Procent uptime za 24h / 7d / 30d i sparkline opóźnienia.' },
           { title: 'Incydenty', body: 'Kiedy padło, jak długo, kiedy wróciło — pełna oś czasu.' },
         ],
+      },
+      dashboard: {
+        label: 'Panel sterowania',
+        title: 'Dashboard, który widzi wszystko',
+        sub: 'Profesjonalna analityka na głównym ekranie panelu: żywe KPI, rozkład statusów, wykres opóźnienia, strumień incydentów i nadzór SSL — cała infrastruktura na jednym ekranie.',
+        bullets: [
+          { title: 'Żywe KPI', body: 'Projekty, monitory, uptime z 24 godzin i incydenty z tygodnia — liczniki aktualizują się same.' },
+          { title: 'Monitory wg statusu', body: 'Wykres rozkłada infrastrukturę: działa, spowolnienie, nie działa.' },
+          { title: 'Wykres opóźnienia · 24h', body: 'Średnie i bieżące opóźnienie wszystkich sprawdzeń z doby na płynnym wykresie.' },
+          { title: 'Strumień incydentów', body: 'Ostatnie awarie i przywrócenia wszystkich projektów z czasem przestoju.' },
+          { title: 'Nadzór SSL', body: 'Certyfikaty z kończącym się terminem same wskakują na górę listy.' },
+          { title: 'Szukaj i filtruj', body: 'Błyskawiczne wyszukiwanie projektów i filtr „tylko z problemami”.' },
+        ],
+        demo: {
+          projects: 'Projekty', monitors: 'Monitory', uptime: 'Uptime · 24h', incidents: 'Incydenty · 7 dni',
+          split: 'Monitory wg statusu', latency: 'Opóźnienie · 24 godziny', avg: 'średnie', now: 'teraz', total: 'łącznie',
+          feed: 'Ostatnie incydenty', ssl: 'Certyfikaty SSL',
+          resolved: 'przywrócono w 2 min', ongoing: 'nie działa 1 min', days: '{n} dni',
+        },
       },
       how: {
         label: 'Jak to działa',
@@ -451,6 +493,10 @@ const DICT = {
     overview: {
       title: 'Przegląd', monitorsSplit: 'Monitory wg statusu', latency: 'Opóźnienie · 24 godziny',
       avg: 'średnie', now: 'teraz', total: 'łącznie', noData: 'Brak danych sprawdzeń',
+      uptime24: 'Uptime · 24h', incidents7: 'Incydenty · 7 dni', checks24: '{n} sprawdzeń w 24h',
+      incidentsFeed: 'Ostatnie incydenty', incidentsEmpty: 'Brak incydentów — wszystko stabilne',
+      sslWatch: 'Certyfikaty SSL', sslEmpty: 'Brak monitorów SSL', sslDays: '{n} dni',
+      slowest: 'Top opóźnień', slowestEmpty: 'Brak danych o opóźnieniu',
     },
     inquiries: {
       title: 'Zgłoszenia', heading: 'Zgłoszenia Enterprise',
@@ -465,6 +511,8 @@ const DICT = {
       emptyHint: 'Dodaj projekt i przypisz monitory — stronę, bazę, serwer.',
       newProject: 'Nowy projekt', monitors: '{n} mon.', allUp: 'wszystko działa',
       issues: '{n} z problemem', noMonitors: 'brak monitorów', updated: 'zaktualizowano',
+      search: 'Szukaj projektu…', fAll: 'Wszystkie', fIssues: 'Problemy', fUp: 'Działa', fUnknown: 'Brak danych',
+      noMatch: 'Nic nie znaleziono — zmień wyszukiwanie lub filtr.',
     },
     project: {
       back: '← Do projektów', monitors: 'Monitory', addMonitor: 'Dodaj monitor',
@@ -481,7 +529,7 @@ const DICT = {
       target: 'Adres / host', targetHintHttp: 'https://example.com', targetHintTcp: 'host.example.com',
       port: 'Port', method: 'Metoda HTTP', expectedStatus: 'Oczekiwany kod', keyword: 'Szukane słowo w odpowiedzi',
       interval: 'Interwał (s)', timeout: 'Timeout (ms)', sslWarnDays: 'Ostrzeż na N dni przed wygaśnięciem SSL',
-      executor: 'Gdzie sprawdzać', enabled: 'Włączony',
+      enabled: 'Włączony',
       anonKey: 'Anon / publishable key (opcjonalnie)',
       anonKeyHint: 'Z kluczem monitor co 3 dni wykonuje prawdziwe zapytanie API do bazy — Supabase liczy to jako aktywność i darmowy projekt nie jest pauzowany (keep-alive). Gdzie znaleźć klucz: supabase.com/dashboard → twój projekt → ⚙ Project Settings → API Keys → skopiuj „anon public” (lub Publishable key).',
       deleteConfirm: 'Usunąć monitor „{name}”?',
@@ -516,7 +564,6 @@ const DICT = {
     enum: {
       mstatus: { up: 'Up', degraded: 'Degraded', down: 'Down', unknown: 'No data' },
       mtype: { http: 'HTTP(S)', tcp: 'TCP port', ssl: 'SSL cert', keyword: 'Keyword', ping: 'Ping (ICMP)', supabase: 'Supabase' },
-      executor: { cloud: 'Cloud', mac: 'Mac agent' },
     },
     common: {
       email: 'Email', password: 'Password', cancel: 'Cancel', save: 'Save', create: 'Create',
@@ -542,7 +589,7 @@ const DICT = {
       successTitle: 'Almost there', checkEmail: 'Confirm your address via the link in the email.', successCta: 'To sign in',
     },
     landing: {
-      nav: { features: 'Features', how: 'How it works', app: 'App', keepalive: 'Keep-alive', pricing: 'Pricing', faq: 'FAQ', login: 'Sign in', signup: 'Start free' },
+      nav: { features: 'Features', dashboard: 'Dashboard', how: 'How it works', app: 'App', keepalive: 'Keep-alive', pricing: 'Pricing', faq: 'FAQ', login: 'Sign in', signup: 'Start free' },
       loader: 'Forming the cloud…',
       hero: {
         badge: 'Next-gen uptime monitoring',
@@ -599,6 +646,25 @@ const DICT = {
           { title: 'Uptime & latency', body: 'Uptime % over 24h / 7d / 30d and a latency sparkline.' },
           { title: 'Incidents', body: 'When it went down, how long, when it recovered — a full timeline.' },
         ],
+      },
+      dashboard: {
+        label: 'Control panel',
+        title: 'A dashboard that sees everything',
+        sub: 'Professional analytics right on the panel home screen: live KPIs, status breakdown, a latency chart, an incident feed and SSL watch — your whole infrastructure on one screen.',
+        bullets: [
+          { title: 'Live KPIs', body: 'Projects, monitors, 24-hour uptime and weekly incidents — the counters update themselves.' },
+          { title: 'Monitors by status', body: 'A chart breaks your infrastructure down: up, degraded, down.' },
+          { title: 'Latency chart · 24h', body: 'Average and current latency of all checks over the day on a smooth chart.' },
+          { title: 'Incident feed', body: 'The latest outages and recoveries across all projects, with downtime duration.' },
+          { title: 'SSL watch', body: 'Certificates about to expire float to the top of the list on their own.' },
+          { title: 'Search & filters', body: 'Instant project search and an “issues only” filter.' },
+        ],
+        demo: {
+          projects: 'Projects', monitors: 'Monitors', uptime: 'Uptime · 24h', incidents: 'Incidents · 7 days',
+          split: 'Monitors by status', latency: 'Latency · 24 hours', avg: 'average', now: 'now', total: 'total',
+          feed: 'Recent incidents', ssl: 'SSL certificates',
+          resolved: 'resolved in 2 min', ongoing: 'down for 1 min', days: '{n} d',
+        },
       },
       how: {
         label: 'How it works',
@@ -698,6 +764,10 @@ const DICT = {
     overview: {
       title: 'Overview', monitorsSplit: 'Monitors by status', latency: 'Latency · 24 hours',
       avg: 'average', now: 'now', total: 'total', noData: 'No check data yet',
+      uptime24: 'Uptime · 24h', incidents7: 'Incidents · 7 days', checks24: '{n} checks in 24h',
+      incidentsFeed: 'Recent incidents', incidentsEmpty: 'No incidents — all stable',
+      sslWatch: 'SSL certificates', sslEmpty: 'No SSL monitors', sslDays: '{n} d',
+      slowest: 'Slowest monitors', slowestEmpty: 'No latency data yet',
     },
     inquiries: {
       title: 'Inquiries', heading: 'Enterprise inquiries',
@@ -712,6 +782,8 @@ const DICT = {
       emptyHint: 'Add a project and attach monitors — site, database, server.',
       newProject: 'New project', monitors: '{n} mon.', allUp: 'all up',
       issues: '{n} with issues', noMonitors: 'no monitors', updated: 'updated',
+      search: 'Search projects…', fAll: 'All', fIssues: 'Issues', fUp: 'Up', fUnknown: 'No data',
+      noMatch: 'Nothing found — change the search or filter.',
     },
     project: {
       back: '← To projects', monitors: 'Monitors', addMonitor: 'Add monitor',
@@ -728,7 +800,7 @@ const DICT = {
       target: 'Address / host', targetHintHttp: 'https://example.com', targetHintTcp: 'host.example.com',
       port: 'Port', method: 'HTTP method', expectedStatus: 'Expected code', keyword: 'Keyword in response',
       interval: 'Interval (s)', timeout: 'Timeout (ms)', sslWarnDays: 'Warn N days before SSL expiry',
-      executor: 'Run from', enabled: 'Enabled',
+      enabled: 'Enabled',
       anonKey: 'Anon / publishable key (optional)',
       anonKeyHint: 'With a key the monitor makes a real API request to the database every 3 days — Supabase counts it as activity, so a free project is never auto-paused (keep-alive). Where to find the key: supabase.com/dashboard → your project → ⚙ Project Settings → API Keys → copy “anon public” (or the Publishable key).',
       deleteConfirm: 'Delete monitor “{name}”?',

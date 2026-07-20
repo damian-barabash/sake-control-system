@@ -9,8 +9,9 @@ export const MSTATUS = {
   unknown:  { dot: '#55615A', text: '#8A968F' },
 }
 
-export const MONITOR_TYPES = ['http', 'tcp', 'ssl', 'keyword', 'supabase', 'ping']
-export const EXECUTORS = ['cloud', 'mac']
+// 'ping' (ICMP) is intentionally absent: it needs the Mac agent, and all checks
+// run from the cloud now. Legacy labels for it remain in i18n for old rows.
+export const MONITOR_TYPES = ['http', 'tcp', 'ssl', 'keyword', 'supabase']
 export const HTTP_METHODS = ['GET', 'HEAD', 'POST']
 
 // Which extra fields each monitor type uses (drives the form).
@@ -20,7 +21,6 @@ export const TYPE_FIELDS = {
   ssl:      ['ssl_warn_days'],
   tcp:      ['port'],
   supabase: ['anon_key'],
-  ping:     [],
 }
 
 export const DEFAULT_PORT = { tcp: 443, ssl: 443 }

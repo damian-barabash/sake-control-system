@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useT } from '../context/LangContext'
 import { Modal, Field, Toggle, Spinner } from './ui'
-import { MONITOR_TYPES, EXECUTORS, HTTP_METHODS, TYPE_FIELDS, DEFAULT_PORT } from '../lib/constants'
+import { MONITOR_TYPES, HTTP_METHODS, TYPE_FIELDS, DEFAULT_PORT } from '../lib/constants'
 
 const num = (v) => (v === '' || v == null ? null : Number(v))
 
@@ -12,7 +12,6 @@ export function MonitorFormModal({ open, onClose, projectId, monitor, onSaved })
   const [form, setForm] = useState(() => ({
     name: monitor?.name ?? '',
     type: monitor?.type ?? 'http',
-    executor: monitor?.executor ?? 'cloud',
     target: monitor?.target ?? '',
     port: monitor?.port ?? '',
     method: monitor?.method ?? 'GET',
@@ -48,7 +47,7 @@ export function MonitorFormModal({ open, onClose, projectId, monitor, onSaved })
       project_id: projectId,
       name: form.name.trim(),
       type: form.type,
-      executor: form.executor,
+      executor: 'cloud',
       target: form.target.trim(),
       port: has('port') ? num(form.port) : null,
       method: has('method') ? form.method : 'GET',
@@ -86,26 +85,15 @@ export function MonitorFormModal({ open, onClose, projectId, monitor, onSaved })
           <input className="field-box" value={form.name} onChange={(e) => set('name', e.target.value)} required autoFocus />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label={t('monitorForm.type')}>
-            <select className="field-box" value={form.type} onChange={(e) => onType(e.target.value)}>
-              {MONITOR_TYPES.map((ty) => (
-                <option key={ty} value={ty}>
-                  {t('enum.mtype.' + ty)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t('monitorForm.executor')}>
-            <select className="field-box" value={form.executor} onChange={(e) => set('executor', e.target.value)}>
-              {EXECUTORS.map((ex) => (
-                <option key={ex} value={ex}>
-                  {t('enum.executor.' + ex)}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
+        <Field label={t('monitorForm.type')}>
+          <select className="field-box" value={form.type} onChange={(e) => onType(e.target.value)}>
+            {MONITOR_TYPES.map((ty) => (
+              <option key={ty} value={ty}>
+                {t('enum.mtype.' + ty)}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         <Field label={t('monitorForm.target')} hint={targetHint}>
           <input className="field-box" value={form.target} onChange={(e) => set('target', e.target.value)} required placeholder={targetHint} />

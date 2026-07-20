@@ -7,6 +7,7 @@ import { LangSwitch } from '../components/LangSwitch'
 import { ThemeToggle } from '../components/ThemeToggle'
 import GridBackground from '../landing/GridBackground'
 import { EnterpriseModal } from '../components/EnterpriseModal'
+import { Donut, AreaChart } from '../components/charts'
 
 const STATUS = { up: '#34C77F', down: '#E2564A', degraded: '#E3B341' }
 const MAIL = {
@@ -130,6 +131,136 @@ function LiveDemo({ lang }) {
               </div>
             )
           })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- panel dashboard showcase (mirrors the real /app overview) ---------- */
+const DASH_SERIES = [96, 88, 104, 92, 86, 110, 124, 102, 94, 90, 84, 88, 96, 120, 108, 92, 86, 84, 90, 98, 94, 88, 86, 84]
+
+function DashboardShowcase({ lang }) {
+  const D = dict(lang).landing.dashboard
+  const M = dict(lang).enum.mstatus
+  const kpis = [
+    { label: D.demo.projects, v: '12', tone: '#34C77F' },
+    { label: D.demo.monitors, v: '18', tone: '#4C9AFF' },
+    { label: D.demo.uptime, v: '99.98%', tone: '#9A7BFF' },
+    { label: D.demo.incidents, v: '1', tone: '#E3B341' },
+  ]
+  const segments = [
+    { key: 'up', value: 16, color: STATUS.up },
+    { key: 'degraded', value: 1, color: STATUS.degraded },
+    { key: 'down', value: 1, color: STATUS.down },
+  ]
+  const feed = [
+    { name: 'api.example.com', status: 'down', note: D.demo.ongoing },
+    { name: 'app.example.com', status: 'up', note: D.demo.resolved },
+  ]
+  const ssl = [
+    { name: 'api.example.com', days: 9, tone: STATUS.degraded },
+    { name: 'example.com', days: 62, tone: STATUS.up },
+  ]
+  return (
+    <div className="relative">
+      <div className="absolute -inset-8 -z-10 rounded-[3rem] bg-[radial-gradient(55%_45%_at_50%_40%,rgba(52,199,127,0.16)_0%,rgba(52,199,127,0)_70%)]" />
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface/75 shadow-[0_50px_110px_-50px_rgba(0,0,0,0.55)]">
+        {/* window chrome */}
+        <div className="flex items-center gap-2 border-b border-line px-5 py-3">
+          <span className="h-2.5 w-2.5 rounded-full bg-down/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-degraded/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-accent/80" />
+          <span className="ml-3 inline-flex items-center gap-2 text-[11px] text-faint">
+            <img src="./logo.png" alt="" className="h-4 w-4" /> sakecontrol.pl/app
+          </span>
+          <span className="ml-auto inline-flex items-center gap-1.5 text-[10.5px] text-faint">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> {dict(lang).landing.inbox.live}
+          </span>
+        </div>
+
+        <div className="space-y-3.5 p-4 sm:p-5">
+          {/* KPI row */}
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            {kpis.map((k) => (
+              <div key={k.label} className="rounded-xl border border-line bg-surface2/70 px-3.5 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: k.tone }} />
+                  <span className="truncate text-[10.5px] text-faint">{k.label}</span>
+                </div>
+                <div className="mt-1.5 font-display text-[1.25rem] font-semibold leading-none tabular-nums text-ink">{k.v}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* donut + latency */}
+          <div className="grid gap-3.5 lg:grid-cols-5">
+            <div className="rounded-xl border border-line bg-surface2/50 p-4 lg:col-span-2">
+              <div className="text-[12px] font-semibold text-ink">{D.demo.split}</div>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <Donut segments={segments} size={124} thickness={13} centerTitle="18" centerSub={D.demo.total} />
+                <ul className="min-w-0 space-y-2">
+                  {segments.map((s) => (
+                    <li key={s.key} className="flex items-center gap-2 text-[11.5px]">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                      <span className="truncate text-muted">{M[s.key]}</span>
+                      <span className="ml-auto font-mono text-[11px] tabular-nums text-ink">{s.value}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="flex flex-col rounded-xl border border-line bg-surface2/50 p-4 lg:col-span-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-[12px] font-semibold text-ink">{D.demo.latency}</div>
+                <div className="flex items-center gap-4">
+                  <span className="text-right">
+                    <span className="block font-mono text-[13px] tabular-nums text-ink">95 ms</span>
+                    <span className="block text-[9.5px] text-faint">{D.demo.avg}</span>
+                  </span>
+                  <span className="text-right">
+                    <span className="block font-mono text-[13px] tabular-nums text-accentText">84 ms</span>
+                    <span className="block text-[9.5px] text-faint">{D.demo.now}</span>
+                  </span>
+                </div>
+              </div>
+              <div className="mt-3 flex-1">
+                <AreaChart points={DASH_SERIES} height={110} />
+              </div>
+            </div>
+          </div>
+
+          {/* incidents + ssl */}
+          <div className="grid gap-3.5 sm:grid-cols-2">
+            <div className="rounded-xl border border-line bg-surface2/50 p-4">
+              <div className="mb-2.5 text-[12px] font-semibold text-ink">{D.demo.feed}</div>
+              <ul className="divide-y divide-line/70">
+                {feed.map((f) => (
+                  <li key={f.name} className="flex items-center gap-2.5 py-2">
+                    <Dot status={f.status} />
+                    <span className="min-w-0 flex-1 truncate text-[12px] text-ink">{f.name}</span>
+                    <span className="shrink-0 font-mono text-[10.5px]" style={{ color: STATUS[f.status] }}>{f.note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-line bg-surface2/50 p-4">
+              <div className="mb-2.5 text-[12px] font-semibold text-ink">{D.demo.ssl}</div>
+              <ul className="divide-y divide-line/70">
+                {ssl.map((s) => (
+                  <li key={s.name} className="flex items-center gap-2.5 py-2">
+                    <span className="min-w-0 flex-1 truncate text-[12px] text-ink">{s.name}</span>
+                    <span
+                      className="shrink-0 rounded-full border px-2 py-0.5 font-mono text-[10px] tabular-nums"
+                      style={{ color: s.tone, borderColor: rgba(s.tone, 0.35), background: rgba(s.tone, 0.1) }}
+                    >
+                      {D.demo.days.replace('{n}', s.days)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -457,6 +588,7 @@ export default function Landing() {
   const nav = (id) => { setMenuOpen(false); scrollTo(id) }
   const navLinks = [
     { id: 'features', label: L.nav.features },
+    { id: 'dashboard', label: L.nav.dashboard },
     { id: 'how', label: L.nav.how },
     { id: 'app', label: L.nav.app },
     { id: 'keepalive', label: L.nav.keepalive },
@@ -572,6 +704,25 @@ export default function Landing() {
                   </div>
                   <h3 className="mt-5 font-display text-lg font-semibold text-ink">{f.title}</h3>
                   <p className="mt-2 text-[14px] leading-relaxed text-muted">{f.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* panel dashboard */}
+        <section id="dashboard" className="py-24">
+          <div className="mx-auto max-w-6xl px-5">
+            <SectionHead label={L.dashboard.label} title={L.dashboard.title} sub={L.dashboard.sub} />
+            <div className="mt-14"><DashboardShowcase lang={lang} /></div>
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {L.dashboard.bullets.map((b) => (
+                <div key={b.title} className="rounded-2xl border border-line bg-surface/60 p-5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-accent">✓</span>
+                    <h3 className="font-display text-[15px] font-semibold text-ink">{b.title}</h3>
+                  </div>
+                  <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{b.body}</p>
                 </div>
               ))}
             </div>

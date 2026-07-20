@@ -41,7 +41,6 @@ function MonitorRow({ monitor, history, canManage, onEdit, onDelete, onReload })
               {t('enum.mtype.' + monitor.type)}
             </span>
             {!monitor.enabled && <span className="rounded-full border border-down/30 bg-down/10 px-2 py-0.5 text-[10.5px] text-down">off</span>}
-            {monitor.executor === 'mac' && <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10.5px] text-accentText">mac</span>}
           </div>
           <a
             href={canOpen ? monitor.target : undefined}
