@@ -1,8 +1,21 @@
 // Core health checker. Two entry modes:
 //   1. Scheduler (pg_cron, no body): runs every due `executor='cloud'` monitor.
 //   2. On-demand: { monitor_id } from the app's "Check now" button (auth required).
-// Writes `checks` history, updates `monitor_state`, opens/resolves `incidents`
-// (anti-flap: 2 consecutive downs), and emails on down/recovery via Resend.
+//      { test_push: true } sends a test alarm to the caller's own devices.
+//
+// v9 (2026-07-30) — the "every minute, ironclad" pass:
+//   * 1-minute cadence: monitors are claimed atomically via claim_due_monitors()
+//     so two overlapping cron invocations can never double-check a monitor, and
+//     the batch runs CONCURRENTLY (a serial loop cannot fit 17 monitors x 10s
+//     into a 60-second window).
+//   * No more false "down": every failed check is retried, and a DNS-class
+//     failure is cross-checked against public DNS-over-HTTPS resolvers before
+//     anyone gets woken up. The edge runtime's own resolver was intermittently
+//     returning "Name or service not known" for hosts that were perfectly alive,
+//     which is what made healthy projects flap for hours.
+//   * Push that actually arrives: hybrid FCM payload (system notification as the
+//     guaranteed floor + data for the app to upgrade into the looping alarm),
+//     repeats until acknowledged, and every attempt lands in notification_log.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
@@ -16,10 +29,19 @@ const APP_URL = Deno.env.get('APP_URL') ?? 'https://sakecontrol.pl'
 const CRON_KEY = Deno.env.get('CRON_KEY') // optional hardening for the scheduler path
 
 const DEGRADED_MS = 3000
-const FAIL_THRESHOLD = 2 // consecutive downs before an incident opens
+const FAIL_THRESHOLD = 2 // consecutive failed cycles before an incident opens
+const CONCURRENCY = 8 // parallel checks per invocation
+const BATCH_LIMIT = 100
 // Authed keep-alive ping cadence for supabase monitors with an anon key.
-// Supabase pauses free projects after 7 days of no activity; every 3 days = 2x margin.
-const KEEPALIVE_MS = 3 * 86400000
+// Supabase pauses idle free projects; a daily authenticated request is cheap
+// and leaves no room for the counter to creep up on us.
+const KEEPALIVE_MS = 24 * 3600 * 1000
+// Alarm repeats: every cycle early on, then slower; give up after a day so a
+// permanently dead target doesn't ring forever.
+const REPEAT_FAST_COUNT = 15
+const REPEAT_FAST_MS = 60_000
+const REPEAT_SLOW_MS = 300_000
+const REPEAT_MAX_AGE_MS = 24 * 3600 * 1000
 
 function cors(origin: string | null) {
   return {
@@ -31,6 +53,8 @@ function cors(origin: string | null) {
 }
 const json = (b: unknown, s: number, o: string | null) =>
   new Response(JSON.stringify(b), { status: s, headers: { ...cors(o), 'Content-Type': 'application/json' } })
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 function raceTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -46,7 +70,29 @@ function hostFromTarget(target: string): string {
   return target.replace(/^.*?@/, '').split('/')[0].split(':')[0]
 }
 
-type Result = { status: 'up' | 'degraded' | 'down'; code: number | null; latency: number | null; error: string | null; keepalive?: boolean }
+/// Run tasks with a bounded number in flight. Order of results matches input.
+async function pool<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const out = new Array<R>(items.length)
+  let next = 0
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (true) {
+      const i = next++
+      if (i >= items.length) return
+      out[i] = await fn(items[i])
+    }
+  })
+  await Promise.all(workers)
+  return out
+}
+
+type Result = {
+  status: 'up' | 'degraded' | 'down'
+  code: number | null
+  latency: number | null
+  error: string | null
+  keepalive?: boolean
+  note?: string | null
+}
 
 async function httpCheck(m: any, opts: { keyword?: boolean; reachable?: boolean } = {}): Promise<Result> {
   const { keyword, reachable } = opts
@@ -156,6 +202,103 @@ async function runCheck(m: any): Promise<Result> {
   }
 }
 
+// ---- second opinion: is the target down, or is OUR resolver having a moment? ----
+// The edge runtime has been observed returning "failed to lookup address
+// information" for hours on hosts that answer instantly from everywhere else.
+// Treating that as "down" is exactly the false alarm this system must not raise.
+const DNS_ERROR = /dns error|failed to lookup address|name or service not known|nodename nor servname/i
+const TRANSIENT = /connection reset|tls handshake|broken pipe|unexpected eof|connection refused|timeout/i
+
+type Doh = { resolved: boolean; nxdomain: boolean; ips: string[] }
+
+async function resolveDoh(host: string): Promise<Doh> {
+  const providers = [
+    `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=A`,
+    `https://dns.google/resolve?name=${encodeURIComponent(host)}&type=A`,
+  ]
+  for (const url of providers) {
+    try {
+      const res = await raceTimeout(fetch(url, { headers: { accept: 'application/dns-json' } }), 5000)
+      if (!res.ok) { try { await res.body?.cancel() } catch { /* ignore */ } ; continue }
+      const j = await res.json()
+      // RCODE 3 = NXDOMAIN: authoritative "this name does not exist"
+      if (j.Status === 3) return { resolved: true, nxdomain: true, ips: [] }
+      if (j.Status === 0) {
+        const ips = (j.Answer ?? [])
+          .filter((a: any) => a.type === 1 && typeof a.data === 'string')
+          .map((a: any) => a.data)
+        if (ips.length) return { resolved: true, nxdomain: false, ips }
+      }
+    } catch { /* try the next provider */ }
+  }
+  return { resolved: false, nxdomain: false, ips: [] }
+}
+
+/// Plain TCP reachability against a known-good IP — no DNS, no certificate
+/// validation, just "does something accept a connection there".
+async function tcpProbe(ip: string, port: number, timeout: number): Promise<boolean> {
+  let conn: Deno.Conn | undefined
+  try {
+    conn = await raceTimeout(Deno.connect({ hostname: ip, port }), Math.min(timeout, 8000))
+    return true
+  } catch {
+    return false
+  } finally {
+    try { conn?.close() } catch { /* ignore */ }
+  }
+}
+
+/// A check nobody has to second-guess: retry, then verify a DNS failure against
+/// public resolvers before declaring an outage.
+async function reliableCheck(m: any): Promise<Result> {
+  const first = await runCheck(m)
+  if (first.status !== 'down') return first
+
+  // Attempt two — a single blip should never reach anyone's phone.
+  await sleep(1500)
+  const second = await runCheck(m)
+  if (second.status !== 'down') {
+    return { ...second, note: 'первая попытка не прошла, подтверждено со второй' }
+  }
+
+  const err = second.error ?? ''
+  if (!DNS_ERROR.test(err)) {
+    // A genuine transport/HTTP failure, confirmed twice.
+    return second
+  }
+
+  const host = hostFromTarget(m.target)
+  const doh = await resolveDoh(host)
+
+  if (doh.nxdomain) {
+    return {
+      ...second,
+      error: `хост не существует в DNS (NXDOMAIN): ${host} — проверьте адрес монитора`,
+      note: 'подтверждено публичными DNS-резолверами',
+    }
+  }
+
+  if (doh.ips.length) {
+    // Public DNS knows the host; our runtime did not. Prove liveness by IP.
+    const port = m.port || (m.target.startsWith('http://') ? 80 : 443)
+    const alive = await tcpProbe(doh.ips[0], port, m.timeout_ms || 10000)
+    if (alive) {
+      return {
+        status: 'up',
+        code: null,
+        latency: null,
+        error: null,
+        note: `DNS проверяющего не сработал; хост подтверждён напрямую (${doh.ips[0]}:${port})`,
+      }
+    }
+    return { ...second, error: `${host} резолвится, но не принимает соединения на порт ${port}` }
+  }
+
+  // Public resolvers unreachable too — most likely the checker has no network.
+  // Report down, but say plainly that this is unconfirmed.
+  return { ...second, note: 'не удалось подтвердить: публичные DNS-резолверы тоже недоступны' }
+}
+
 // ---- email ----
 function emailHtml(opts: { down: boolean; project: string; monitor: string; target: string; detail: string }) {
   const { down, project, monitor, target, detail } = opts
@@ -172,15 +315,36 @@ function emailHtml(opts: { down: boolean; project: string; monitor: string; targ
     </div></div>`
 }
 
-async function sendEmail(to: string[], subject: string, html: string) {
+async function logDelivery(admin: any, rows: any[]) {
+  if (!rows.length) return
+  try { await admin.from('notification_log').insert(rows) } catch { /* never block on the journal */ }
+}
+
+async function sendEmail(
+  admin: any,
+  ctx: { monitorId: string; incidentId: string | null; kind: string },
+  to: string[],
+  subject: string,
+  html: string,
+) {
   if (!RESEND_API_KEY || to.length === 0) return
+  let ok = false
+  let error: string | null = null
   try {
-    await fetch('https://api.resend.com/emails', {
+    const res = await raceTimeout(fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from: FROM, to, subject, html }),
-    })
-  } catch { /* best-effort */ }
+    }), 15000)
+    ok = res.ok
+    if (!ok) error = `HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`
+    else { try { await res.body?.cancel() } catch { /* ignore */ } }
+  } catch (e) {
+    error = String((e as any)?.message ?? e)
+  }
+  await logDelivery(admin, to.map((t) => ({
+    incident_id: ctx.incidentId, monitor_id: ctx.monitorId, channel: 'email', kind: ctx.kind, target: t, ok, error,
+  })))
 }
 
 async function recipientsFor(admin: any, project: any): Promise<string[]> {
@@ -195,14 +359,250 @@ async function recipientsFor(admin: any, project: any): Promise<string[]> {
       if (e) set.add(e)
     }
   }
-  // owner / admins always notified
-  const { data: admins } = await admin.from('profiles').select('alert_email, email').eq('role', 'admin')
-  for (const a of admins ?? []) set.add(a.alert_email || a.email)
+  // the project owner is always notified (NOT every tenant admin — multi-tenant)
+  if (project.created_by) {
+    const { data: owner } = await admin.from('profiles').select('alert_email, email').eq('id', project.created_by).maybeSingle()
+    if (owner) set.add(owner.alert_email || owner.email)
+  }
   return [...set]
 }
 
-async function processMonitor(admin: any, m: any) {
-  const res = await runCheck(m)
+// ---- FCM push (HTTP v1, service-account OAuth) ----
+const FCM_SA = Deno.env.get('FCM_SERVICE_ACCOUNT')
+const ALARM_CHANNEL = 'sake_alarm_v2'
+const INFO_CHANNEL = 'sake_info_v1'
+
+const b64url = (s: string | Uint8Array) => {
+  const bytes = typeof s === 'string' ? new TextEncoder().encode(s) : s
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function pemToDer(pem: string): ArrayBuffer {
+  const b64 = pem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '')
+  const bin = atob(b64)
+  const buf = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i)
+  return buf.buffer
+}
+
+let fcmCache: { token: string; exp: number } | null = null
+async function fcmAccessToken(): Promise<{ token: string; projectId: string } | null> {
+  if (!FCM_SA) return null
+  const sa = JSON.parse(FCM_SA)
+  if (fcmCache && Date.now() < fcmCache.exp - 60000) return { token: fcmCache.token, projectId: sa.project_id }
+  try {
+    const iat = Math.floor(Date.now() / 1000)
+    const input = `${b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))}.${b64url(JSON.stringify({
+      iss: sa.client_email,
+      scope: 'https://www.googleapis.com/auth/firebase.messaging',
+      aud: 'https://oauth2.googleapis.com/token',
+      iat,
+      exp: iat + 3600,
+    }))}`
+    const key = await crypto.subtle.importKey('pkcs8', pemToDer(sa.private_key), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign'])
+    const sig = new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(input)))
+    const res = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=${encodeURIComponent('urn:ietf:params:oauth:grant-type:jwt-bearer')}&assertion=${input}.${b64url(sig)}`,
+    })
+    const j = await res.json()
+    if (!j.access_token) return null
+    fcmCache = { token: j.access_token, exp: Date.now() + (j.expires_in ?? 3600) * 1000 }
+    return { token: j.access_token, projectId: sa.project_id }
+  } catch {
+    return null
+  }
+}
+
+type Device = { token: string; platform: string; alarm: boolean; userId: string }
+
+// Devices to push for a project: moderators + owner + members, honoring alert_prefs.
+async function pushDevicesFor(admin: any, project: any): Promise<Device[]> {
+  const ids = new Set<string>()
+  const { data: mods } = await admin.from('profiles').select('id').eq('role', 'moderator')
+  for (const r of mods ?? []) ids.add(r.id)
+  if (project.created_by) ids.add(project.created_by)
+  const { data: mems } = await admin.from('project_members').select('user_id').eq('project_id', project.id)
+  for (const r of mems ?? []) ids.add(r.user_id)
+  if (!ids.size) return []
+  const { data: prefs } = await admin.from('alert_prefs').select('user_id, push_enabled, alarm_enabled').eq('project_id', project.id).in('user_id', [...ids])
+  const users = [...ids]
+    .map((id) => {
+      const p = (prefs ?? []).find((x: any) => x.user_id === id)
+      return { id, push: p?.push_enabled ?? true, alarm: p?.alarm_enabled ?? true }
+    })
+    .filter((u) => u.push)
+  if (!users.length) return []
+  const { data: toks } = await admin.from('push_tokens').select('user_id, token, platform').in('user_id', users.map((u) => u.id))
+  return (toks ?? []).map((t: any) => ({
+    token: t.token,
+    platform: t.platform,
+    alarm: users.find((u) => u.id === t.user_id)!.alarm,
+    userId: t.user_id,
+  }))
+}
+
+/// One FCM message. The Android payload is deliberately HYBRID:
+/// `notification` guarantees the phone rings even if the OS refuses to spin up
+/// our background isolate (Doze, aggressive OEM battery managers, app killed) —
+/// that was the "sometimes it arrives, sometimes it doesn't". `data` rides along
+/// so the app, when it does wake, replaces that notification (same tag) with the
+/// insistent looping alarm and can open the full-screen alarm screen.
+function buildMessage(d: Device, data: Record<string, string>, title: string, body: string, alarm: boolean) {
+  if (d.platform === 'android') {
+    return {
+      token: d.token,
+      data,
+      android: {
+        priority: 'HIGH',
+        ttl: '3600s',
+        notification: {
+          title,
+          body,
+          tag: data.incident_id, // app's local notification reuses this tag → replaces, never duplicates
+          channel_id: alarm ? ALARM_CHANNEL : INFO_CHANNEL,
+          notification_priority: alarm ? 'PRIORITY_MAX' : 'PRIORITY_HIGH',
+          default_vibrate_timings: true,
+          visibility: 'PUBLIC',
+          ...(alarm ? { sound: 'alarm' } : {}),
+        },
+      },
+    }
+  }
+  return {
+    token: d.token,
+    data,
+    apns: {
+      headers: { 'apns-priority': '10', 'apns-push-type': 'alert', ...(alarm ? { 'apns-collapse-id': data.incident_id } : {}) },
+      payload: {
+        aps: {
+          alert: { title, body },
+          // 'default' on purpose: a named sound that is not bundled in the IPA
+          // can land as a silent push, which is the worst possible failure here.
+          sound: 'default',
+          'interruption-level': alarm ? 'time-sensitive' : 'active',
+          'relevance-score': alarm ? 1 : 0.5,
+        },
+      },
+    },
+  }
+}
+
+async function sendPush(
+  admin: any,
+  project: any,
+  monitor: any,
+  incidentId: string,
+  kind: 'open' | 'repeat' | 'resolved',
+  detail: string,
+): Promise<{ sent: number; failed: number }> {
+  const auth = await fcmAccessToken()
+  if (!auth) {
+    await logDelivery(admin, [{
+      incident_id: incidentId, monitor_id: monitor.id, channel: 'push', kind,
+      target: null, ok: false, error: 'FCM_SERVICE_ACCOUNT missing or invalid',
+    }])
+    return { sent: 0, failed: 0 }
+  }
+  const devices = await pushDevicesFor(admin, project)
+  if (!devices.length) {
+    // Worth recording: "nobody has a registered device" looks identical to
+    // "push failed" from the outside, and it is the likelier cause.
+    await logDelivery(admin, [{
+      incident_id: incidentId, monitor_id: monitor.id, channel: 'push', kind,
+      target: null, ok: false, error: 'нет зарегистрированных устройств у получателей',
+    }])
+    return { sent: 0, failed: 0 }
+  }
+  const resolved = kind === 'resolved'
+  const title = resolved ? `🟢 ${project.name} · ${monitor.name}` : `🔴 ${project.name} · ${monitor.name}`
+  const body = resolved ? detail : (detail || 'Монитор недоступен')
+  const base = {
+    type: `incident_${kind}`,
+    incident_id: incidentId,
+    project_id: String(project.id),
+    project: project.name,
+    monitor: monitor.name,
+    detail: body,
+    title,
+  }
+
+  const logs: any[] = []
+  let sent = 0
+  let failed = 0
+  await pool(devices, 6, async (d) => {
+    const alarm = d.alarm && !resolved
+    const message = buildMessage(d, { ...base, alarm: alarm ? '1' : '0' }, title, body, alarm)
+    let ok = false
+    let error: string | null = null
+    try {
+      const res = await raceTimeout(fetch(`https://fcm.googleapis.com/v1/projects/${auth.projectId}/messages:send`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${auth.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      }), 15000)
+      ok = res.ok
+      if (!ok) {
+        const t = await res.text()
+        error = `HTTP ${res.status}: ${t.slice(0, 200)}`
+        // stale/unregistered token → drop it so we stop paying for it
+        if (/UNREGISTERED|NOT_FOUND|INVALID_ARGUMENT/.test(t)) {
+          await admin.from('push_tokens').delete().eq('token', d.token)
+        }
+      } else {
+        try { await res.body?.cancel() } catch { /* ignore */ }
+      }
+    } catch (e) {
+      error = String((e as any)?.message ?? e)
+    }
+    ok ? sent++ : failed++
+    logs.push({
+      incident_id: incidentId, monitor_id: monitor.id, channel: 'push', kind,
+      target: `${d.platform}:${d.token.slice(0, 12)}…`, ok, error,
+    })
+  })
+  await logDelivery(admin, logs)
+  return { sent, failed }
+}
+
+// Re-push open unacked incidents until someone presses "Я знаю". Apple gives no
+// looping sound without Critical Alerts entitlement, so the server keeps knocking.
+// Guard rails: only while the monitor is genuinely still down, and never past a day.
+async function repeatUnacked(admin: any) {
+  const { data: unacked } = await admin
+    .from('incidents')
+    .select('id, monitor_id, started_at, last_notified_at, push_repeats')
+    .eq('status', 'open')
+    .is('acked_at', null)
+    .eq('notified_open', true)
+  for (const inc of unacked ?? []) {
+    const repeats = inc.push_repeats ?? 0
+    if (Date.now() - new Date(inc.started_at).getTime() > REPEAT_MAX_AGE_MS) continue
+    const interval = repeats < REPEAT_FAST_COUNT ? REPEAT_FAST_MS : REPEAT_SLOW_MS
+    const last = new Date(inc.last_notified_at ?? inc.started_at).getTime()
+    if (Date.now() - last < interval - 5000) continue
+
+    const { data: m } = await admin.from('monitors').select('*, monitor_state(status, last_error)').eq('id', inc.monitor_id).maybeSingle()
+    if (!m) continue
+    // Don't keep screaming at someone if the thing came back but the incident
+    // hasn't been closed yet for whatever reason.
+    if (m.monitor_state?.status && m.monitor_state.status !== 'down') continue
+    const { data: project } = await admin.from('projects').select('*').eq('id', m.project_id).maybeSingle()
+    if (!project) continue
+
+    await sendPush(admin, project, m, inc.id, 'repeat', m.monitor_state?.last_error || 'Монитор всё ещё недоступен')
+    await admin.from('incidents').update({
+      push_repeats: repeats + 1,
+      last_notified_at: new Date().toISOString(),
+    }).eq('id', inc.id)
+  }
+}
+
+async function processMonitor(admin: any, m: any, opts: { bumpNextRun?: boolean } = {}) {
+  const res = await reliableCheck(m)
   const now = new Date()
 
   await admin.from('checks').insert({
@@ -211,18 +611,19 @@ async function processMonitor(admin: any, m: any) {
     status_code: res.code,
     latency_ms: res.latency,
     error: res.error,
+    note: res.note ?? null,
   })
 
-  // 24h uptime (degraded counts as up — service reachable)
-  const since = new Date(Date.now() - 86400000).toISOString()
-  const { data: rows } = await admin.from('checks').select('status').eq('monitor_id', m.id).gte('checked_at', since)
-  const total = rows?.length ?? 0
-  const upCount = (rows ?? []).filter((r: any) => r.status !== 'down').length
-  const uptime24 = total ? Number(((upCount / total) * 100).toFixed(2)) : null
+  // uptime is counted in Postgres now — no more hauling 1440 rows per monitor
+  let u24: number | null = null, u7: number | null = null, u30: number | null = null
+  try {
+    const { data: up } = await admin.rpc('monitor_uptime', { p_monitor: m.id })
+    const row = Array.isArray(up) ? up[0] : up
+    if (row) { u24 = row.u24; u7 = row.u7; u30 = row.u30 }
+  } catch { /* uptime is cosmetic; never fail a check over it */ }
 
   const prev = m.monitor_state ?? {}
-  const wasDown = (prev.consecutive_failures ?? 0)
-  const consecutive = res.status === 'down' ? wasDown + 1 : 0
+  const consecutive = res.status === 'down' ? (prev.consecutive_failures ?? 0) + 1 : 0
 
   await admin.from('monitor_state').upsert({
     monitor_id: m.id,
@@ -231,16 +632,20 @@ async function processMonitor(admin: any, m: any) {
     last_latency_ms: res.latency,
     last_status_code: res.code,
     last_error: res.error,
+    last_note: res.note ?? null,
     consecutive_failures: consecutive,
-    uptime_24h: uptime24,
+    uptime_24h: u24,
+    uptime_7d: u7,
+    uptime_30d: u30,
     updated_at: now.toISOString(),
   })
 
-  await admin.from('monitors').update({
-    next_run_at: new Date(Date.now() + (m.interval_seconds || 300) * 1000).toISOString(),
-    // stamp only when the authed ping actually landed, so failures retry next cycle
-    ...(res.keepalive ? { last_keepalive_at: now.toISOString() } : {}),
-  }).eq('id', m.id)
+  const patch: any = {}
+  // the scheduler path already claimed (and advanced) next_run_at atomically
+  if (opts.bumpNextRun) patch.next_run_at = new Date(Date.now() + (m.interval_seconds || 60) * 1000).toISOString()
+  // stamp only when the authed ping actually landed, so failures retry next cycle
+  if (res.keepalive) patch.last_keepalive_at = now.toISOString()
+  if (Object.keys(patch).length) await admin.from('monitors').update(patch).eq('id', m.id)
 
   // incident transitions
   const { data: openInc } = await admin
@@ -259,11 +664,15 @@ async function processMonitor(admin: any, m: any) {
     const { data: project } = await admin.from('projects').select('*').eq('id', m.project_id).single()
     const to = await recipientsFor(admin, project)
     await sendEmail(
+      admin,
+      { monitorId: m.id, incidentId: inc?.id ?? null, kind: 'open' },
       to,
       `🔴 ${project.name} · ${m.name} недоступен`,
       emailHtml({ down: true, project: project.name, monitor: m.name, target: m.target, detail: res.error || 'Проверка не прошла' }),
     )
-    return { monitor: m.name, status: res.status, opened: inc?.id }
+    let push = { sent: 0, failed: 0 }
+    if (inc) push = await sendPush(admin, project, m, inc.id, 'open', res.error || 'Проверка не прошла')
+    return { monitor: m.name, status: res.status, opened: inc?.id, push }
   }
 
   if (res.status !== 'down' && openInc) {
@@ -278,14 +687,61 @@ async function processMonitor(admin: any, m: any) {
     const downMs = Date.now() - new Date(openInc.started_at).getTime()
     const mins = Math.max(1, Math.round(downMs / 60000))
     await sendEmail(
+      admin,
+      { monitorId: m.id, incidentId: openInc.id, kind: 'resolved' },
       to,
       `🟢 ${project.name} · ${m.name} восстановлен`,
       emailHtml({ down: false, project: project.name, monitor: m.name, target: m.target, detail: `Недоступность длилась ~${mins} мин` }),
     )
+    await sendPush(admin, project, m, openInc.id, 'resolved', `Восстановлен · лежал ~${mins} мин`)
     return { monitor: m.name, status: res.status, resolved: openInc.id }
   }
 
-  return { monitor: m.name, status: res.status }
+  return { monitor: m.name, status: res.status, note: res.note ?? undefined }
+}
+
+/// Fires a real alarm push at the caller's own devices, so "are notifications
+/// actually working on this phone?" has a one-tap answer instead of waiting for
+/// a real outage to find out.
+async function sendTestPush(admin: any, userId: string) {
+  const auth = await fcmAccessToken()
+  if (!auth) return { ok: false, error: 'FCM не настроен на сервере', devices: 0 }
+  const { data: toks } = await admin.from('push_tokens').select('token, platform, user_id').eq('user_id', userId)
+  if (!toks?.length) return { ok: false, error: 'на этом аккаунте нет зарегистрированных устройств', devices: 0 }
+  const fakeIncident = crypto.randomUUID()
+  const data = {
+    type: 'incident_test',
+    incident_id: fakeIncident,
+    project_id: '',
+    project: 'Sake Control',
+    monitor: 'Тест уведомлений',
+    detail: 'Если вы это слышите и видите — аларм работает.',
+    title: '🔔 Sake Control · тест',
+    alarm: '1',
+  }
+  let sent = 0
+  const logs: any[] = []
+  for (const t of toks) {
+    const d: Device = { token: t.token, platform: t.platform, alarm: true, userId }
+    const message = buildMessage(d, data, data.title, data.detail, true)
+    let ok = false
+    let error: string | null = null
+    try {
+      const res = await raceTimeout(fetch(`https://fcm.googleapis.com/v1/projects/${auth.projectId}/messages:send`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${auth.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message }),
+      }), 15000)
+      ok = res.ok
+      if (!ok) error = `HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`
+      else { try { await res.body?.cancel() } catch { /* ignore */ } ; sent++ }
+    } catch (e) {
+      error = String((e as any)?.message ?? e)
+    }
+    logs.push({ incident_id: null, monitor_id: null, channel: 'push', kind: 'test', target: `${t.platform}:${t.token.slice(0, 12)}…`, ok, error })
+  }
+  await logDelivery(admin, logs)
+  return { ok: sent > 0, devices: toks.length, sent, error: sent ? null : (logs[0]?.error ?? 'не доставлено') }
 }
 
 Deno.serve(async (req) => {
@@ -297,41 +753,73 @@ Deno.serve(async (req) => {
   let body: any = {}
   try { body = await req.json() } catch { /* empty body = scheduler */ }
 
-  // On-demand single monitor (from the app) — require an authorized user who can see it.
-  if (body?.monitor_id) {
+  // ---- authenticated per-user actions ----
+  if (body?.monitor_id || body?.test_push) {
     const authHeader = req.headers.get('Authorization') ?? ''
     const asUser = createClient(SUPABASE_URL, ANON, { global: { headers: { Authorization: authHeader } } })
     const { data: { user } } = await asUser.auth.getUser()
     if (!user) return json({ error: 'Unauthorized' }, 401, origin)
+
+    if (body.test_push) {
+      const out = await sendTestPush(admin, user.id)
+      return json(out, 200, origin)
+    }
+
     const { data: visible } = await asUser.from('monitors').select('id').eq('id', body.monitor_id).maybeSingle()
     if (!visible) return json({ error: 'Forbidden' }, 403, origin)
 
     const { data: m } = await admin.from('monitors').select('*, monitor_state(*)').eq('id', body.monitor_id).single()
-    const out = await processMonitor(admin, m)
+    const out = await processMonitor(admin, m, { bumpNextRun: true })
     return json({ ok: true, ...out }, 200, origin)
   }
 
-  // Scheduler path (pg_cron). Optional shared-secret hardening.
+  // ---- scheduler path (pg_cron). Optional shared-secret hardening. ----
   if (CRON_KEY && req.headers.get('x-cron-key') !== CRON_KEY) {
     return json({ error: 'Forbidden' }, 403, origin)
   }
 
-  const { data: due } = await admin
-    .from('monitors')
-    .select('*, monitor_state(*)')
-    .eq('enabled', true)
-    .eq('executor', 'cloud')
-    .lte('next_run_at', new Date().toISOString())
-    .order('next_run_at', { ascending: true })
-    .limit(50)
-
-  const results = []
-  for (const m of due ?? []) {
-    try {
-      results.push(await processMonitor(admin, m))
-    } catch (e) {
-      results.push({ monitor: m.name, error: String((e as any)?.message ?? e) })
-    }
+  // Ops self-test: asks Google to validate credentials, payload and every
+  // registered token WITHOUT delivering anything. Answers "would the alarm go
+  // out right now?" without waking anybody up.
+  if (body?.fcm_selftest) {
+    const auth = await fcmAccessToken()
+    if (!auth) return json({ ok: false, error: 'FCM_SERVICE_ACCOUNT missing or invalid' }, 200, origin)
+    const { data: toks } = await admin.from('push_tokens').select('token, platform, user_id')
+    const checked = await pool(toks ?? [], 6, async (t: any) => {
+      const d: Device = { token: t.token, platform: t.platform, alarm: true, userId: t.user_id }
+      const message = buildMessage(d, {
+        type: 'incident_open', incident_id: '00000000-0000-0000-0000-000000000000',
+        project_id: '', project: 'selftest', monitor: 'selftest', detail: 'selftest', title: 'selftest', alarm: '1',
+      }, 'selftest', 'selftest', true)
+      try {
+        const res = await raceTimeout(fetch(`https://fcm.googleapis.com/v1/projects/${auth.projectId}/messages:send`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${auth.token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ validate_only: true, message }),
+        }), 15000)
+        const txt = await res.text()
+        return { token: `${t.platform}:${t.token.slice(0, 12)}…`, ok: res.ok, detail: res.ok ? 'valid' : txt.slice(0, 220) }
+      } catch (e) {
+        return { token: `${t.platform}:${t.token.slice(0, 12)}…`, ok: false, detail: String((e as any)?.message ?? e) }
+      }
+    })
+    return json({ ok: true, credentials: 'ok', project: auth.projectId, devices: checked }, 200, origin)
   }
+
+  // Claim atomically: overlapping invocations get disjoint batches, so a check
+  // that runs long can never be duplicated by the next minute's cron tick.
+  const { data: due, error: claimErr } = await admin.rpc('claim_due_monitors', { p_limit: BATCH_LIMIT })
+  if (claimErr) return json({ error: `claim failed: ${claimErr.message}` }, 500, origin)
+
+  const results = await pool(due ?? [], CONCURRENCY, async (m: any) => {
+    try {
+      return await processMonitor(admin, m)
+    } catch (e) {
+      return { monitor: m.name, error: String((e as any)?.message ?? e) }
+    }
+  })
+
+  try { await repeatUnacked(admin) } catch { /* best-effort */ }
+
   return json({ ok: true, checked: results.length, results }, 200, origin)
 })

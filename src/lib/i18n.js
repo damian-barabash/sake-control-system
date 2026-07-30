@@ -162,7 +162,7 @@ const DICT = {
         features: [
           'Вставьте anon / publishable key в монитор — это вся настройка',
           'Настоящий запрос к базе раз в 3 дня — с двойным запасом',
-          'Без нагрузки: остальные проверки — лёгкий пинг каждые 5 минут',
+          'Без нагрузки: остальные проверки — лёгкий пинг каждую минуту',
           'Ключ отозван — монитор сразу подсветится жёлтым',
         ],
         note: 'Нужен только публичный anon-ключ (он и так виден в коде вашего сайта). Секретные ключи (service_role) не используются и не хранятся.',
@@ -209,7 +209,7 @@ const DICT = {
         title: 'Коротко о главном',
         items: [
           { q: 'Что именно умеет проверять SAKE?', a: 'HTTP(S), TCP-порт, SSL-сертификат, наличие ключевого слова и health Supabase. Скоро — ICMP-ping через агента.' },
-          { q: 'Как часто идут проверки?', a: 'По умолчанию каждые 5 минут, на Pro — от 1 минуты на монитор.' },
+          { q: 'Как часто идут проверки?', a: 'Каждую минуту — это значение по умолчанию для всех мониторов. Интервал можно увеличить для отдельного монитора.' },
           { q: 'А если упадёт сам SAKE?', a: 'Проверки и письма живут в облаке, независимо от вашей и нашей офисной инфраструктуры — это и есть принцип «сторож надёжнее сторожимого».' },
           { q: 'Кому приходят письма?', a: 'На почту, привязанную к проекту, и на адреса аккаунтов с доступом — список редактируется.' },
           { q: 'Как работает бесплатный период?', a: '7 дней полного доступа бесплатно и без карты. Дальше — $7/мес или $75/год. Отменить можно в любой момент.' },
@@ -236,7 +236,7 @@ const DICT = {
       confirmDelete: 'Удалить заявку от {email}?',
     },
     projects: {
-      title: 'Проекты', refreshNote: 'проверка каждые 5 мин', empty: 'Пока нет проектов',
+      title: 'Проекты', refreshNote: 'проверка каждую минуту', empty: 'Пока нет проектов',
       emptyHint: 'Добавьте проект и привяжите к нему мониторы — сайт, базу, сервер.',
       newProject: 'Новый проект', monitors: '{n} монит.', allUp: 'всё работает',
       issues: '{n} с проблемой', noMonitors: 'нет мониторов', updated: 'обновлено',
@@ -433,7 +433,7 @@ const DICT = {
         features: [
           'Wklej anon / publishable key do monitora — to cała konfiguracja',
           'Prawdziwe zapytanie do bazy co 3 dni — z podwójnym zapasem',
-          'Bez obciążenia: pozostałe sprawdzenia to lekki ping co 5 minut',
+          'Bez obciążenia: pozostałe sprawdzenia to lekki ping co minutę',
           'Klucz odwołany — monitor od razu zaświeci się na żółto',
         ],
         note: 'Potrzebny jest tylko publiczny klucz anon (i tak widoczny w kodzie twojej strony). Klucze sekretne (service_role) nie są używane ani przechowywane.',
@@ -480,7 +480,7 @@ const DICT = {
         title: 'Najważniejsze w skrócie',
         items: [
           { q: 'Co dokładnie sprawdza SAKE?', a: 'HTTP(S), port TCP, certyfikat SSL, obecność słowa kluczowego i health Supabase. Wkrótce — ping ICMP przez agenta.' },
-          { q: 'Jak często idą sprawdzenia?', a: 'Domyślnie co 5 minut, w Pro — od 1 minuty na monitor.' },
+          { q: 'Jak często idą sprawdzenia?', a: 'Co minutę — to domyślna wartość dla każdego monitora. Interwał można wydłużyć dla wybranego monitora.' },
           { q: 'A jeśli padnie samo SAKE?', a: 'Sprawdzenia i maile żyją w chmurze, niezależnie od Twojej i naszej infrastruktury biurowej — to zasada „stróż pewniejszy niż pilnowane”.' },
           { q: 'Do kogo trafiają maile?', a: 'Na adres przypisany do projektu i adresy kont z dostępem — lista jest edytowalna.' },
           { q: 'Jak działa okres próbny?', a: '7 dni pełnego dostępu za darmo i bez karty. Potem $7/mies lub $75/rok. Możesz anulować w każdej chwili.' },
@@ -507,7 +507,7 @@ const DICT = {
       confirmDelete: 'Usunąć zgłoszenie od {email}?',
     },
     projects: {
-      title: 'Projekty', refreshNote: 'sprawdzanie co 5 min', empty: 'Brak projektów',
+      title: 'Projekty', refreshNote: 'sprawdzanie co minutę', empty: 'Brak projektów',
       emptyHint: 'Dodaj projekt i przypisz monitory — stronę, bazę, serwer.',
       newProject: 'Nowy projekt', monitors: '{n} mon.', allUp: 'wszystko działa',
       issues: '{n} z problemem', noMonitors: 'brak monitorów', updated: 'zaktualizowano',
@@ -704,7 +704,7 @@ const DICT = {
         features: [
           'Paste the anon / publishable key into a monitor — that’s the whole setup',
           'A real database request every 3 days — with a 2x margin',
-          'No load: all other checks stay a light ping every 5 minutes',
+          'No load: all other checks stay a light ping every minute',
           'Key revoked? The monitor turns yellow right away',
         ],
         note: 'Only the public anon key is needed (it’s already visible in your site’s code). Secret keys (service_role) are never used or stored.',
@@ -751,7 +751,7 @@ const DICT = {
         title: 'The essentials, in short',
         items: [
           { q: 'What exactly can SAKE check?', a: 'HTTP(S), TCP port, SSL certificate, keyword presence and Supabase health. Soon — ICMP ping via an agent.' },
-          { q: 'How often do checks run?', a: 'Every 5 minutes by default, from 1 minute per monitor on Pro.' },
+          { q: 'How often do checks run?', a: 'Every minute — that is the default for every monitor. You can stretch the interval per monitor if you want.' },
           { q: 'What if SAKE itself goes down?', a: 'Checks and emails live in the cloud, independent of your and our office infrastructure — that is the “watchman more reliable than the watched” principle.' },
           { q: 'Who receives the emails?', a: 'The address attached to the project plus the emails of accounts with access — the list is editable.' },
           { q: 'How does the free trial work?', a: '7 days of full access, free and with no card. After that $7/mo or $75/yr. Cancel anytime.' },
@@ -778,7 +778,7 @@ const DICT = {
       confirmDelete: 'Delete the inquiry from {email}?',
     },
     projects: {
-      title: 'Projects', refreshNote: 'checked every 5 min', empty: 'No projects yet',
+      title: 'Projects', refreshNote: 'checked every minute', empty: 'No projects yet',
       emptyHint: 'Add a project and attach monitors — site, database, server.',
       newProject: 'New project', monitors: '{n} mon.', allUp: 'all up',
       issues: '{n} with issues', noMonitors: 'no monitors', updated: 'updated',

@@ -67,7 +67,11 @@ function MonitorRow({ monitor, history, canManage, onEdit, onDelete, onReload })
 
       {/* metrics */}
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Metric label={t('project.uptime')} value={formatUptime(st.uptime_24h)} />
+        <Metric
+          label={t('project.uptime')}
+          value={formatUptime(st.uptime_24h)}
+          title={`7d: ${formatUptime(st.uptime_7d)} · 30d: ${formatUptime(st.uptime_30d)}`}
+        />
         <Metric label={t('project.latency')} value={formatLatency(st.last_latency_ms)} />
         <Metric
           label={t('project.lastCheck')}
@@ -82,6 +86,10 @@ function MonitorRow({ monitor, history, canManage, onEdit, onDelete, onReload })
 
       {st.last_error && status !== 'up' && (
         <p className="mt-3 break-all font-mono text-[12px] text-down/90">{st.last_error}</p>
+      )}
+      {/* how the checker reached that verdict — retries, fallback resolver, NXDOMAIN proof */}
+      {st.last_note && (
+        <p className="mt-2 break-words font-mono text-[11.5px] text-faint">{st.last_note}</p>
       )}
 
       {/* actions */}
@@ -115,9 +123,9 @@ function MonitorRow({ monitor, history, canManage, onEdit, onDelete, onReload })
   )
 }
 
-function Metric({ label, value, warn }) {
+function Metric({ label, value, warn, title }) {
   return (
-    <span className="flex flex-col rounded-xl border border-line bg-surface2/70 px-3 py-2.5">
+    <span title={title} className="flex flex-col rounded-xl border border-line bg-surface2/70 px-3 py-2.5">
       <span className="text-[10.5px] text-faint">{label}</span>
       <span className={`mt-0.5 font-mono text-[13px] ${warn ? 'text-degraded' : 'text-ink'}`}>{value}</span>
     </span>
