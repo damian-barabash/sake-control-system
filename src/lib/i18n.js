@@ -44,7 +44,11 @@ const DICT = {
       submit: 'Создать аккаунт', haveAccount: 'Уже есть аккаунт?', signin: 'Войти',
       errMismatch: 'Пароли не совпадают', errWeak: 'Пароль слишком короткий (мин. 6 символов)',
       errExists: 'Такой email уже зарегистрирован', errGeneric: 'Не удалось зарегистрироваться: ',
-      successTitle: 'Почти готово', checkEmail: 'Подтвердите адрес по ссылке в письме.', successCta: 'К входу',
+      errEmail: 'Укажите корректный email', errMail: 'Не удалось отправить письмо с кодом. Попробуйте позже.',
+      codeTitle: 'Подтвердите email', codeSub: 'Мы отправили 6-значный код на {email}. Введите его ниже.',
+      codeLabel: 'Код из письма', verify: 'Подтвердить',
+      resend: 'Отправить код ещё раз', resent: 'Код отправлен повторно.',
+      errCode: 'Неверный код. Проверьте письмо и попробуйте снова.', errExpired: 'Код истёк. Отправьте новый.',
     },
     landing: {
       nav: { features: 'Возможности', dashboard: 'Дашборд', how: 'Как работает', app: 'Приложение', keepalive: 'Keep-alive', pricing: 'Цены', faq: 'Вопросы', login: 'Войти', signup: 'Начать бесплатно' },
@@ -216,7 +220,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Перестаньте узнавать о сбоях от клиентов', sub: 'Поднимите свой первый монитор за пару минут.', button: 'Создать аккаунт' },
-      footer: { tagline: 'Облако, которое не спит.', rights: 'Часть экосистемы DBDC Studio', privacy: 'Политика конфиденциальности', refund: 'Политика возвратов', contact: 'Контакт' },
+      footer: { tagline: 'Облако, которое не спит.', rights: 'Часть экосистемы DBDC Studio', privacy: 'Политика конфиденциальности', refund: 'Политика возвратов', cookies: 'Cookies', contact: 'Контакт' },
     },
     topbar: { lang: 'Язык', signout: 'Выйти', admin: 'admin', projects: 'Проекты', users: 'Пользователи', inquiries: 'Заявки', menu: 'Меню', account: 'Аккаунт' },
     overview: {
@@ -282,6 +286,11 @@ const DICT = {
       roleHint: 'Модератор видит всё, администратор — свои проекты, клиент — только привязанные.',
       empty: 'Пока только администратор', assign: 'Доступ к проектам', you: 'вы',
     },
+    cookies: {
+      text: 'Мы используем только cookies и localStorage, необходимые для работы сервиса и запоминания настроек (вход, язык, тема). Без рекламы и трекеров.',
+      more: 'Подробнее о cookies',
+      accept: 'Принять',
+    },
     billing: {
       manage: 'Подписка', modalTitle: 'Управление подпиской',
       statusActive: 'Подписка активна', statusTrial: 'Пробный период', statusInactive: 'Подписка неактивна',
@@ -345,7 +354,11 @@ const DICT = {
       submit: 'Utwórz konto', haveAccount: 'Masz już konto?', signin: 'Zaloguj się',
       errMismatch: 'Hasła nie są zgodne', errWeak: 'Hasło za krótkie (min. 6 znaków)',
       errExists: 'Ten email jest już zarejestrowany', errGeneric: 'Nie udało się zarejestrować: ',
-      successTitle: 'Prawie gotowe', checkEmail: 'Potwierdź adres linkiem z maila.', successCta: 'Do logowania',
+      errEmail: 'Podaj poprawny email', errMail: 'Nie udało się wysłać maila z kodem. Spróbuj później.',
+      codeTitle: 'Potwierdź email', codeSub: 'Wysłaliśmy 6-cyfrowy kod na {email}. Wpisz go poniżej.',
+      codeLabel: 'Kod z maila', verify: 'Potwierdź',
+      resend: 'Wyślij kod ponownie', resent: 'Kod wysłany ponownie.',
+      errCode: 'Nieprawidłowy kod. Sprawdź maila i spróbuj ponownie.', errExpired: 'Kod wygasł. Wyślij nowy.',
     },
     landing: {
       nav: { features: 'Funkcje', dashboard: 'Panel', how: 'Jak działa', app: 'Aplikacja', keepalive: 'Keep-alive', pricing: 'Cennik', faq: 'Pytania', login: 'Zaloguj', signup: 'Zacznij za darmo' },
@@ -517,7 +530,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Przestań dowiadywać się o awariach od klientów', sub: 'Postaw pierwszy monitor w kilka minut.', button: 'Utwórz konto' },
-      footer: { tagline: 'Chmura, która nie śpi.', rights: 'Część ekosystemu DBDC Studio', privacy: 'Polityka prywatności', refund: 'Polityka zwrotów', contact: 'Kontakt' },
+      footer: { tagline: 'Chmura, która nie śpi.', rights: 'Część ekosystemu DBDC Studio', privacy: 'Polityka prywatności', refund: 'Polityka zwrotów', cookies: 'Cookies', contact: 'Kontakt' },
     },
     topbar: { lang: 'Język', signout: 'Wyloguj', admin: 'admin', projects: 'Projekty', users: 'Użytkownicy', inquiries: 'Zgłoszenia', menu: 'Menu', account: 'Konto' },
     overview: {
@@ -583,6 +596,11 @@ const DICT = {
       roleHint: 'Moderator widzi wszystko, administrator — swoje projekty, klient — tylko przypisane.',
       empty: 'Na razie tylko administrator', assign: 'Dostęp do projektów', you: 'ty',
     },
+    cookies: {
+      text: 'Używamy wyłącznie cookies i localStorage niezbędnych do działania serwisu i zapamiętania ustawień (logowanie, język, motyw). Bez reklam i trackerów.',
+      more: 'Więcej o cookies',
+      accept: 'Akceptuję',
+    },
     billing: {
       manage: 'Subskrypcja', modalTitle: 'Zarządzanie subskrypcją',
       statusActive: 'Subskrypcja aktywna', statusTrial: 'Okres próbny', statusInactive: 'Subskrypcja nieaktywna',
@@ -646,7 +664,11 @@ const DICT = {
       submit: 'Create account', haveAccount: 'Already have an account?', signin: 'Sign in',
       errMismatch: 'Passwords do not match', errWeak: 'Password too short (min. 6 characters)',
       errExists: 'This email is already registered', errGeneric: 'Could not register: ',
-      successTitle: 'Almost there', checkEmail: 'Confirm your address via the link in the email.', successCta: 'To sign in',
+      errEmail: 'Enter a valid email', errMail: 'Could not send the code email. Try again later.',
+      codeTitle: 'Confirm your email', codeSub: 'We sent a 6-digit code to {email}. Enter it below.',
+      codeLabel: 'Code from the email', verify: 'Confirm',
+      resend: 'Send the code again', resent: 'Code sent again.',
+      errCode: 'Wrong code. Check the email and try again.', errExpired: 'The code expired. Send a new one.',
     },
     landing: {
       nav: { features: 'Features', dashboard: 'Dashboard', how: 'How it works', app: 'App', keepalive: 'Keep-alive', pricing: 'Pricing', faq: 'FAQ', login: 'Sign in', signup: 'Start free' },
@@ -818,7 +840,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Stop hearing about outages from your customers', sub: 'Bring up your first monitor in a couple of minutes.', button: 'Create account' },
-      footer: { tagline: 'A cloud that never sleeps.', rights: 'Part of the DBDC Studio ecosystem', privacy: 'Privacy Policy', refund: 'Refund Policy', contact: 'Contact' },
+      footer: { tagline: 'A cloud that never sleeps.', rights: 'Part of the DBDC Studio ecosystem', privacy: 'Privacy Policy', refund: 'Refund Policy', cookies: 'Cookies', contact: 'Contact' },
     },
     topbar: { lang: 'Language', signout: 'Sign out', admin: 'admin', projects: 'Projects', users: 'Users', inquiries: 'Inquiries', menu: 'Menu', account: 'Account' },
     overview: {
@@ -883,6 +905,11 @@ const DICT = {
       roles: { moderator: 'Moderator', admin: 'Administrator', member: 'Client' },
       roleHint: 'Moderator sees everything, administrator — their own projects, client — only assigned ones.',
       empty: 'Only the administrator so far', assign: 'Project access', you: 'you',
+    },
+    cookies: {
+      text: 'We only use cookies and local storage needed to run the service and remember your settings (login, language, theme). No ads or trackers.',
+      more: 'More about cookies',
+      accept: 'Accept',
     },
     billing: {
       manage: 'Subscription', modalTitle: 'Manage subscription',

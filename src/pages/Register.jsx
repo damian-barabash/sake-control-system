@@ -5,8 +5,26 @@ import { useT } from '../context/LangContext'
 import { Spinner } from '../components/ui'
 import { LangSwitch } from '../components/LangSwitch'
 
-// Open self-registration → creates an ADMIN (own isolated workspace). The handle_new_user
-// trigger clamps signup metadata to admin|member, so 'moderator' can never be self-minted.
+// Invoke an Edge Function and pull out our { error: code } even on non-2xx
+// (supabase-js puts the body on error.context, not data, for error responses).
+async function callFn(name, body) {
+  const { data, error } = await supabase.functions.invoke(name, { body })
+  if (error) {
+    let code = 'generic'
+    try {
+      code = (await error.context.json())?.error || 'generic'
+    } catch {
+      /* ignore */
+    }
+    return { errCode: code }
+  }
+  if (data?.error) return { errCode: data.error }
+  return { data }
+}
+
+// Open self-registration → creates an ADMIN (own isolated workspace) and verifies
+// the email with a branded 6-digit code sent from office@sakecontrol.pl.
+// handle_new_user clamps signup metadata to admin|member.
 export default function Register() {
   const { t, lang } = useT()
   const navigate = useNavigate()
@@ -14,9 +32,25 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [code, setCode] = useState('')
+  const [step, setStep] = useState('form') // 'form' | 'code'
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [needsConfirm, setNeedsConfirm] = useState(false)
+  const [resent, setResent] = useState(false)
+
+  const mail = email.trim().toLowerCase()
+
+  function mapStartError(c) {
+    if (c === 'email_exists') return t('register.errExists')
+    if (c === 'weak_password') return t('register.errWeak')
+    if (c === 'invalid_email') return t('register.errEmail')
+    if (c === 'mail_failed') return t('register.errMail')
+    return t('register.errGeneric') + c
+  }
+
+  async function start() {
+    return callFn('register-start', { email: mail, password, full_name: fullName.trim() || null, language: lang })
+  }
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -24,26 +58,39 @@ export default function Register() {
     if (password !== confirm) return setError(t('register.errMismatch'))
     if (password.length < 6) return setError(t('register.errWeak'))
     setBusy(true)
-    const { data, error: err } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: { data: { full_name: fullName.trim() || null, role: 'admin' } },
-    })
-    if (err) {
-      setBusy(false)
-      if (/already|registered|exists/i.test(err.message)) return setError(t('register.errExists'))
-      return setError(t('register.errGeneric') + err.message)
-    }
-    // Persist the chosen UI language on the fresh profile (default would be 'ru').
-    if (data.user?.id) {
-      supabase.from('profiles').update({ language: lang }).eq('id', data.user.id)
-    }
+    const r = await start()
     setBusy(false)
-    if (data.session) {
-      navigate('/app', { replace: true })
-    } else {
-      setNeedsConfirm(true)
+    if (r.errCode) return setError(mapStartError(r.errCode))
+    setStep('code')
+  }
+
+  async function onVerify(e) {
+    e.preventDefault()
+    setError('')
+    setBusy(true)
+    const r = await callFn('register-verify', { email: mail, code: code.trim() })
+    if (r.errCode) {
+      setBusy(false)
+      if (r.errCode === 'wrong_code') return setError(t('register.errCode'))
+      if (r.errCode === 'expired' || r.errCode === 'no_code' || r.errCode === 'too_many')
+        return setError(t('register.errExpired'))
+      return setError(t('register.errGeneric') + r.errCode)
     }
+    // Email confirmed → sign in with the password we already have.
+    const { error: signErr } = await supabase.auth.signInWithPassword({ email: mail, password })
+    setBusy(false)
+    if (signErr) return setError(t('register.errGeneric') + signErr.message)
+    navigate('/app', { replace: true })
+  }
+
+  async function resend() {
+    setError('')
+    setResent(false)
+    setBusy(true)
+    const r = await start()
+    setBusy(false)
+    if (r.errCode) return setError(mapStartError(r.errCode))
+    setResent(true)
   }
 
   return (
@@ -68,17 +115,56 @@ export default function Register() {
             <p className="mt-2 text-sm text-faint">{t('register.sub')}</p>
           </div>
 
-          {needsConfirm ? (
-            <div className="brackets relative card px-7 py-9 text-center">
-              <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-accentSoft text-accent">
-                ✓
-              </div>
-              <h2 className="text-lg font-medium text-ink">{t('register.successTitle')}</h2>
-              <p className="mt-2 text-sm text-faint">{t('register.checkEmail')}</p>
-              <button onClick={() => navigate('/login')} className="btn-solid w-full mt-6 py-3">
-                {t('register.successCta')}
+          {step === 'code' ? (
+            <form onSubmit={onVerify} className="brackets relative card px-7 py-8">
+              <h2 className="text-center text-lg font-medium text-ink">{t('register.codeTitle')}</h2>
+              <p className="mx-auto mb-6 mt-2 max-w-[320px] text-center text-sm text-faint">
+                {t('register.codeSub', { email: mail })}
+              </p>
+
+              <label className="label mb-2 block">{t('register.codeLabel')}</label>
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="000000"
+                className="field-box mb-6 text-center font-mono text-2xl tracking-[0.4em]"
+              />
+
+              {resent && (
+                <div className="mb-4 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accentText">
+                  {t('register.resent')}
+                </div>
+              )}
+              {error && (
+                <div className="mb-5 rounded-lg border border-down/25 bg-down/10 px-3 py-2 text-[0.85rem] text-down">
+                  {error}
+                </div>
+              )}
+
+              <button type="submit" disabled={busy || code.length !== 6} className="btn-solid w-full py-3">
+                {busy ? <Spinner className="border-bg/40 border-t-bg" /> : t('register.verify')}
               </button>
-            </div>
+
+              <div className="mt-5 flex items-center justify-between text-xs text-faint">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep('form')
+                    setError('')
+                  }}
+                  className="hover:text-ink transition-colors"
+                >
+                  {t('common.back')}
+                </button>
+                <button type="button" onClick={resend} disabled={busy} className="text-ink underline-offset-2 hover:underline">
+                  {t('register.resend')}
+                </button>
+              </div>
+            </form>
           ) : (
             <form onSubmit={onSubmit} className="brackets relative card p-7">
               <div className="mb-5">

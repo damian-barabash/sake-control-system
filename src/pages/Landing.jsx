@@ -888,6 +888,7 @@ export default function Landing() {
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
               <a href="/privacy/" className="text-[12px] text-faint transition-colors hover:text-ink">{L.footer.privacy}</a>
               <a href="/refund/" className="text-[12px] text-faint transition-colors hover:text-ink">{L.footer.refund}</a>
+              <a href="/cookies/" className="text-[12px] text-faint transition-colors hover:text-ink">{L.footer.cookies}</a>
               <a href="mailto:dbdcstudio@gmail.com" className="text-[12px] text-faint transition-colors hover:text-ink">{L.footer.contact}</a>
             </div>
             <span className="text-[12px] text-faint">© MMXXVI · {L.footer.rights}</span>

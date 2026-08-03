@@ -4,6 +4,7 @@ import { LangProvider } from './context/LangContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { Protected, PublicOnly } from './components/ProtectedRoute'
 import { BillingGate } from './components/BillingGate'
+import { CookieConsent } from './components/CookieConsent'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -83,6 +84,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <BillingGate />
+          <CookieConsent />
           </ThemeProvider>
         </HashRouter>
       </LangProvider>

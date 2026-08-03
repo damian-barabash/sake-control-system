@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sake Control — Pliki cookies / Cookies</title>
+  <meta name="robots" content="index, follow" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <style>
+    :root {
+      --bg: #0a0c0b; --surface: #121613; --line: #242b26; --ink: #ebf1ed;
+      --muted: #8a968f; --faint: #55615a; --accent: #34c77f;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: var(--sans); line-height: 1.65; font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 96px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 36px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 28px; height: 28px; flex: none; }
+    .brand b { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
+    .langs { display: flex; gap: 6px; }
+    .langs button {
+      font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+      background: transparent; color: var(--muted); border: 1px solid var(--line);
+      border-radius: 8px; padding: 6px 10px; cursor: pointer; transition: .15s;
+    }
+    .langs button:hover { color: var(--ink); }
+    .langs button.on { background: var(--accent); color: #06140d; border-color: var(--accent); }
+    h1 { font-size: 28px; line-height: 1.15; letter-spacing: -.01em; margin: 0 0 8px; }
+    .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+    .updated { font-family: var(--mono); font-size: 12px; color: var(--faint); margin-bottom: 32px; }
+    h2 { font-size: 18px; margin: 34px 0 10px; letter-spacing: -.01em; }
+    p, li, td, th { color: #cfd8d2; }
+    a { color: var(--accent); }
+    ul { padding-left: 18px; }
+    li { margin: 5px 0; }
+    .box { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 16px 18px; margin-top: 14px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
+    th, td { text-align: left; padding: 10px 12px; border: 1px solid var(--line); vertical-align: top; }
+    th { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+    code { font-family: var(--mono); font-size: 12.5px; color: var(--accent); }
+    .foot { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 18px; font-size: 13px; color: var(--faint); }
+    section[data-lang] { display: none; }
+    section[data-lang].on { display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="brand"><img src="/logo.png" alt="" /><b>Sake Control</b></span>
+      <div class="langs">
+        <button data-set="pl" class="on">PL</button>
+        <button data-set="ru">RU</button>
+        <button data-set="en">EN</button>
+      </div>
+    </header>
+
+    <!-- ============ POLSKI ============ -->
+    <section data-lang="pl" class="on">
+      <div class="eyebrow">Sake Control</div>
+      <h1>Pliki cookies i pamięć lokalna</h1>
+      <div class="updated">Ostatnia aktualizacja: 3 sierpnia 2026</div>
+
+      <p>Serwis <b>Sake Control</b> (sakecontrol.pl) używa wyłącznie plików cookies i pamięci lokalnej
+      przeglądarki (localStorage), które są <b>niezbędne do działania usługi</b> lub zapamiętują Twoje
+      ustawienia. <b>Nie używamy</b> cookies reklamowych, śledzących ani zewnętrznych narzędzi
+      analitycznych (brak Google Analytics, pikseli Facebooka itp.).</p>
+
+      <h2>Czego używamy</h2>
+      <table>
+        <tr><th>Wpis</th><th>Cel</th><th>Okres</th></tr>
+        <tr><td><code>sb-…-auth-token</code></td><td>Sesja logowania (Supabase Auth) — utrzymuje Cię zalogowanym.</td><td>do wylogowania</td></tr>
+        <tr><td><code>sake_lang</code></td><td>Wybrany język interfejsu (PL/RU/EN).</td><td>trwale</td></tr>
+        <tr><td><code>sake_theme</code></td><td>Wybrany motyw (jasny/ciemny).</td><td>trwale</td></tr>
+        <tr><td><code>sake_cookie_consent</code></td><td>Zapamiętanie, że zamknąłeś baner cookies.</td><td>trwale</td></tr>
+      </table>
+
+      <h2>Płatności (Paddle)</h2>
+      <div class="box">
+        <p style="margin:0">Przy otwarciu okna płatności nasz sprzedawca końcowy <b>Paddle.com</b> (oraz jego
+        procesor płatności) może ustawić własne, niezbędne do realizacji transakcji cookies — np. do
+        zapobiegania oszustwom i obsługi formularza płatności. Szczegóły:
+        <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener">polityka prywatności Paddle</a>.</p>
+      </div>
+
+      <h2>Jak zarządzać cookies</h2>
+      <p>Możesz usunąć lub zablokować cookies w ustawieniach przeglądarki. Pamiętaj, że zablokowanie
+      wpisów niezbędnych (sesja logowania) uniemożliwi korzystanie z panelu.</p>
+
+      <h2>Podstawa prawna</h2>
+      <p>Wpisy niezbędne — art. 173 ust. 3 pkt 2 Prawa telekomunikacyjnego oraz prawnie uzasadniony
+      interes (art. 6 ust. 1 lit. f RODO). Więcej o przetwarzaniu danych:
+      <a href="/privacy/">Polityka prywatności</a>.</p>
+
+      <div class="foot">Sake Control · część ekosystemu DBDC Studio · kontakt: dbdcstudio@gmail.com</div>
+    </section>
+
+    <!-- ============ РУССКИЙ ============ -->
+    <section data-lang="ru">
+      <div class="eyebrow">Sake Control</div>
+      <h1>Cookies и локальное хранилище</h1>
+      <div class="updated">Последнее обновление: 3 августа 2026</div>
+
+      <p>Сервис <b>Sake Control</b> (sakecontrol.pl) использует только те cookies и localStorage,
+      которые <b>необходимы для работы сервиса</b> или запоминают ваши настройки. <b>Мы не используем</b>
+      рекламные и трекинговые cookies, а также внешнюю аналитику (нет Google Analytics, пикселей
+      Facebook и т.п.).</p>
+
+      <h2>Что мы используем</h2>
+      <table>
+        <tr><th>Запись</th><th>Назначение</th><th>Срок</th></tr>
+        <tr><td><code>sb-…-auth-token</code></td><td>Сессия входа (Supabase Auth) — держит вас залогиненным.</td><td>до выхода</td></tr>
+        <tr><td><code>sake_lang</code></td><td>Выбранный язык интерфейса (RU/PL/EN).</td><td>постоянно</td></tr>
+        <tr><td><code>sake_theme</code></td><td>Выбранная тема (светлая/тёмная).</td><td>постоянно</td></tr>
+        <tr><td><code>sake_cookie_consent</code></td><td>Отметка, что вы закрыли баннер cookies.</td><td>постоянно</td></tr>
+      </table>
+
+      <h2>Платежи (Paddle)</h2>
+      <div class="box">
+        <p style="margin:0">При открытии окна оплаты наш мерчант-провайдер <b>Paddle.com</b> (и его платёжный
+        процессор) может ставить собственные cookies, необходимые для проведения транзакции — например,
+        для защиты от мошенничества и работы платёжной формы. Подробнее:
+        <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener">политика конфиденциальности Paddle</a>.</p>
+      </div>
+
+      <h2>Как управлять cookies</h2>
+      <p>Удалить или заблокировать cookies можно в настройках браузера. Учтите: блокировка необходимых
+      записей (сессия входа) сделает панель недоступной.</p>
+
+      <h2>Правовое основание</h2>
+      <p>Необходимые записи — законный интерес (ст. 6(1)(f) GDPR) и исключение для строго необходимых
+      cookies. Подробнее об обработке данных: <a href="/privacy/">Политика конфиденциальности</a>.</p>
+
+      <div class="foot">Sake Control · часть экосистемы DBDC Studio · контакт: dbdcstudio@gmail.com</div>
+    </section>
+
+    <!-- ============ ENGLISH ============ -->
+    <section data-lang="en">
+      <div class="eyebrow">Sake Control</div>
+      <h1>Cookies and local storage</h1>
+      <div class="updated">Last updated: August 3, 2026</div>
+
+      <p>The <b>Sake Control</b> service (sakecontrol.pl) uses only cookies and browser local storage
+      that are <b>strictly necessary to run the service</b> or remember your settings. <b>We do not use</b>
+      advertising or tracking cookies, nor third-party analytics (no Google Analytics, Facebook pixels, etc.).</p>
+
+      <h2>What we use</h2>
+      <table>
+        <tr><th>Entry</th><th>Purpose</th><th>Duration</th></tr>
+        <tr><td><code>sb-…-auth-token</code></td><td>Login session (Supabase Auth) — keeps you signed in.</td><td>until sign-out</td></tr>
+        <tr><td><code>sake_lang</code></td><td>Selected interface language (PL/RU/EN).</td><td>persistent</td></tr>
+        <tr><td><code>sake_theme</code></td><td>Selected theme (light/dark).</td><td>persistent</td></tr>
+        <tr><td><code>sake_cookie_consent</code></td><td>Remembers that you dismissed the cookie banner.</td><td>persistent</td></tr>
+      </table>
+
+      <h2>Payments (Paddle)</h2>
+      <div class="box">
+        <p style="margin:0">When the payment window opens, our merchant of record <b>Paddle.com</b> (and its
+        payment processor) may set its own cookies required to complete the transaction — e.g. fraud
+        prevention and the payment form. Details:
+        <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener">Paddle privacy policy</a>.</p>
+      </div>
+
+      <h2>Managing cookies</h2>
+      <p>You can delete or block cookies in your browser settings. Note that blocking the strictly
+      necessary entries (login session) will make the panel unusable.</p>
+
+      <h2>Legal basis</h2>
+      <p>Strictly necessary entries — legitimate interest (Art. 6(1)(f) GDPR) and the strictly-necessary
+      cookies exemption. More about data processing: <a href="/privacy/">Privacy Policy</a>.</p>
+
+      <div class="foot">Sake Control · part of the DBDC Studio ecosystem · contact: dbdcstudio@gmail.com</div>
+    </section>
+  </div>
+
+  <script>
+    var btns = document.querySelectorAll('.langs button');
+    var secs = document.querySelectorAll('section[data-lang]');
+    btns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var l = b.getAttribute('data-set');
+        btns.forEach(function (x) { x.classList.toggle('on', x === b); });
+        secs.forEach(function (s) { s.classList.toggle('on', s.getAttribute('data-lang') === l); });
+        document.documentElement.lang = l;
+      });
+    });
+  </script>
+</body>
+</html>
