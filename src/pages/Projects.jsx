@@ -49,26 +49,6 @@ function StatTile({ icon, label, value, text, tone = '#34C77F', delay = 0 }) {
   )
 }
 
-/* checks → 24 hourly buckets of average latency (oldest→newest) */
-function bucketLatency(rows) {
-  if (!rows?.length) return { series: [], avg: null, now: null }
-  const buckets = new Map()
-  for (const r of rows) {
-    if (r.status === 'down' || r.latency_ms == null) continue
-    const h = Math.floor(new Date(r.checked_at).getTime() / 3600000)
-    const b = buckets.get(h) ?? { sum: 0, n: 0 }
-    b.sum += r.latency_ms
-    b.n += 1
-    buckets.set(h, b)
-  }
-  const keys = [...buckets.keys()].sort((a, b) => a - b)
-  const series = keys.map((k) => Math.round(buckets.get(k).sum / buckets.get(k).n))
-  const all = rows.filter((r) => r.status !== 'down' && r.latency_ms != null)
-  const avg = all.length ? Math.round(all.reduce((s, r) => s + r.latency_ms, 0) / all.length) : null
-  const now = all.length ? all[0].latency_ms : null // rows come newest-first
-  return { series, avg, now }
-}
-
 function InsightCard({ title, delay, children }) {
   return (
     <div className="card a-in flex flex-col p-5" style={{ animationDelay: `${delay}ms` }}>
@@ -100,18 +80,15 @@ export default function Projects() {
   const [filter, setFilter] = useState('all')
 
   const load = useCallback(async () => {
-    const since = new Date(Date.now() - 86400000).toISOString()
-    const [{ data }, { data: checks, count }, { data: incs }] = await Promise.all([
+    // The 24h latency series + check count come from one server-side aggregate
+    // (dashboard_checks_24h): pulling raw checks rows here took 15-20 s — the
+    // per-row RLS check ran ~26k times and `count: 'exact'` scanned the lot.
+    const [{ data }, { data: overview }, { data: incs }] = await Promise.all([
       supabase
         .from('projects')
         .select('id, name, description, monitors(id, name, enabled, ssl_warn_days, monitor_state(status, last_checked_at, last_latency_ms, uptime_24h, ssl_days_left))')
         .order('created_at', { ascending: true }),
-      supabase
-        .from('checks')
-        .select('latency_ms, checked_at, status', { count: 'exact' })
-        .gte('checked_at', since)
-        .order('checked_at', { ascending: false })
-        .limit(600),
+      supabase.rpc('dashboard_checks_24h'),
       supabase
         .from('incidents')
         .select('id, monitor_id, status, started_at, resolved_at')
@@ -119,8 +96,8 @@ export default function Projects() {
         .limit(30),
     ])
     setProjects(data ?? [])
-    setLatency(bucketLatency(checks))
-    setChecksCount(count ?? null)
+    setLatency({ series: overview?.series ?? [], avg: overview?.avg ?? null, now: overview?.now ?? null })
+    setChecksCount(overview?.count ?? null)
     setIncidents(incs ?? [])
     setLoading(false)
   }, [])

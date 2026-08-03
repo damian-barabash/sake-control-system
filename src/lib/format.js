@@ -17,6 +17,14 @@ export function formatDate(iso) {
   return `${d.getDate()} ${months[d.getMonth()]} · ${hh}:${mm}`
 }
 
+// Day-only date (subscription "paid until", trial end): "12 сен 2026".
+export function formatDay(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const months = dict(curLang).months
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+}
+
 export function timeAgo(iso) {
   if (!iso) return ''
   const sec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)

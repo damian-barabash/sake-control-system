@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext'
 import { LangProvider } from './context/LangContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { Protected, PublicOnly } from './components/ProtectedRoute'
+import { BillingGate } from './components/BillingGate'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -10,6 +11,8 @@ import Projects from './pages/Projects'
 import ProjectDetail from './pages/ProjectDetail'
 import AdminUsers from './pages/AdminUsers'
 import Inquiries from './pages/Inquiries'
+import Account from './pages/Account'
+import Checkout from './pages/Checkout'
 
 export default function App() {
   return (
@@ -67,8 +70,19 @@ export default function App() {
                 </Protected>
               }
             />
+            <Route
+              path="/account"
+              element={
+                <Protected>
+                  <Account />
+                </Protected>
+              }
+            />
+            {/* Deliberately public: a lapsed user must be able to pay without logging in. */}
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <BillingGate />
           </ThemeProvider>
         </HashRouter>
       </LangProvider>

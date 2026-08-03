@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useT } from '../context/LangContext'
+import { entitlement } from '../lib/billing'
 import { Logo } from './Logo'
 import { LangSwitch } from './LangSwitch'
 import { ThemeToggle } from './ThemeToggle'
@@ -12,6 +13,7 @@ const PATHS = {
   grid: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
   users: 'M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M9.5 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75',
   inbox: 'M22 12h-6l-2 3h-4l-2-3H2M5.5 5h13L22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6z',
+  user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8',
   logout: 'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9',
 }
 export function Ico({ name, className = 'h-[18px] w-[18px]' }) {
@@ -63,6 +65,7 @@ function SidebarContent({ onNavigate }) {
         <NavItem to="/app" end icon="grid">{t('topbar.projects')}</NavItem>
         {isStaff && <NavItem to="/users" icon="users">{t('topbar.users')}</NavItem>}
         {isModerator && <NavItem to="/inquiries" icon="inbox">{t('topbar.inquiries')}</NavItem>}
+        <NavItem to="/account" icon="user">{t('topbar.account')}</NavItem>
       </nav>
 
       {/* footer controls */}
@@ -90,8 +93,9 @@ function SidebarContent({ onNavigate }) {
 /* Panel chrome: fixed sidebar on desktop, top bar + slide-in drawer on mobile.
    `title` renders in the top bar breadcrumb; `crumb` (optional) prefixes it. */
 export function AppShell({ title, crumb, actions, children, wide = false }) {
-  const { profile, user, isStaff, role } = useAuth()
+  const { profile, user, isStaff, isAdmin, role } = useAuth()
   const { t } = useT()
+  const ent = entitlement(profile)
   const [drawer, setDrawer] = useState(false)
   const location = useLocation()
 
@@ -159,6 +163,14 @@ export function AppShell({ title, crumb, actions, children, wide = false }) {
 
           {/* actions + identity */}
           <div className="flex shrink-0 items-center gap-2.5">
+            {isAdmin && ent.state === 'trial' && (
+              <Link
+                to="/account"
+                className="hidden rounded-full border border-[#E3B341]/40 bg-[#E3B341]/10 px-2.5 py-1 text-[10.5px] font-medium text-[#E3B341] transition-colors hover:bg-[#E3B341]/20 sm:block"
+              >
+                {t('billing.trialChip', { n: ent.daysLeft })}
+              </Link>
+            )}
             {actions}
             {isStaff && (
               <span className="hidden rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-[10.5px] font-medium text-accentText md:block">
