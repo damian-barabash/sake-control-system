@@ -613,33 +613,34 @@ export default function Landing() {
 
       {/* nav */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <button onClick={() => nav('top')} className="flex items-center gap-2.5">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-5">
+          <button onClick={() => nav('top')} className="flex shrink-0 items-center gap-2.5">
             <img src="./logo.png" alt="Sake" className="h-8 w-8" />
-            <span className="font-display font-semibold tracking-tight">Sake Control</span>
+            <span className="whitespace-nowrap font-display font-semibold tracking-tight">Sake Control</span>
           </button>
 
-          <nav className="hidden items-center gap-8 md:flex">
+          {/* Full link row only where all 7 links truly fit (xl); below that — burger. */}
+          <nav className="mx-auto hidden items-center gap-6 xl:flex">
             {navLinks.map((n) => (
-              <button key={n.id} onClick={() => nav(n.id)} className="text-[14px] text-muted transition-colors hover:text-ink">{n.label}</button>
+              <button key={n.id} onClick={() => nav(n.id)} className="whitespace-nowrap text-[14px] text-muted transition-colors hover:text-ink">{n.label}</button>
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="ml-auto hidden shrink-0 items-center gap-3 md:flex xl:ml-0">
             <ThemeToggle />
             <LangSwitch />
             {session ? (
-              <button onClick={() => navigate('/app')} className="rounded-lg bg-accent px-4 py-2 text-[13px] font-medium text-[#06140d] transition-colors hover:bg-[#42d98c]">{t('topbar.projects')}</button>
+              <button onClick={() => navigate('/app')} className="whitespace-nowrap rounded-lg bg-accent px-4 py-2 text-[13px] font-medium text-[#06140d] transition-colors hover:bg-[#42d98c]">{t('topbar.projects')}</button>
             ) : (
               <>
-                <button onClick={() => navigate('/login')} className="text-[14px] text-muted transition-colors hover:text-ink">{L.nav.login}</button>
-                <button onClick={() => navigate('/register')} className="rounded-lg bg-accent px-4 py-2 text-[13px] font-medium text-[#06140d] transition-colors hover:bg-[#42d98c]">{L.nav.signup}</button>
+                <button onClick={() => navigate('/login')} className="whitespace-nowrap text-[14px] text-muted transition-colors hover:text-ink">{L.nav.login}</button>
+                <button onClick={() => navigate('/register')} className="whitespace-nowrap rounded-lg bg-accent px-4 py-2 text-[13px] font-medium text-[#06140d] transition-colors hover:bg-[#42d98c]">{L.nav.signup}</button>
               </>
             )}
           </div>
 
-          {/* mobile burger */}
-          <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="rounded-md border border-line p-2 text-muted transition-colors hover:text-ink md:hidden">
+          {/* burger (mobile + tablet, until the full link row fits) */}
+          <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="ml-auto rounded-md border border-line p-2 text-muted transition-colors hover:text-ink md:ml-0 xl:hidden">
             {menuOpen ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>
             ) : (
@@ -650,17 +651,18 @@ export default function Landing() {
 
         {/* mobile dropdown */}
         {menuOpen && (
-          <div className="border-t border-line bg-bg/95 px-5 py-4 backdrop-blur md:hidden">
+          <div className="border-t border-line bg-bg/95 px-5 py-4 backdrop-blur xl:hidden">
             <nav className="flex flex-col gap-1">
               {navLinks.map((n) => (
                 <button key={n.id} onClick={() => nav(n.id)} className="rounded-lg px-3 py-2.5 text-left text-[14px] text-muted transition-colors hover:bg-surface2 hover:text-ink">{n.label}</button>
               ))}
             </nav>
-            <div className="mt-3 flex items-center gap-3 border-t border-line pt-4">
+            {/* controls + auth live in the top bar from md up — avoid duplicates */}
+            <div className="mt-3 flex items-center gap-3 border-t border-line pt-4 md:hidden">
               <ThemeToggle />
               <LangSwitch />
             </div>
-            <div className="mt-4 flex flex-col gap-2.5">
+            <div className="mt-4 flex flex-col gap-2.5 md:hidden">
               {session ? (
                 <button onClick={() => navigate('/app')} className="w-full rounded-lg bg-accent py-2.5 text-[14px] font-medium text-[#06140d]">{t('topbar.projects')}</button>
               ) : (
