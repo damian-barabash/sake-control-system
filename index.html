@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./logo.png" />
+    <link rel="apple-touch-icon" href="./logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0c1411" />
 
@@ -18,6 +19,10 @@
         } catch (e) {}
       })()
     </script>
+
+    <!-- Google Search Console: wklej token weryfikacyjny (metoda "HTML tag"), np.
+         <meta name="google-site-verification" content="TOKEN" />
+         Rekomendowana alternatywa: weryfikacja domeny przez rekord TXT w DNS. -->
 
     <!-- Primary SEO -->
     <title>SAKE Control System — monitoring uptime dla wszystkich Twoich projektów</title>
@@ -54,17 +59,73 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "SAKE Control System",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Web",
-        "url": "https://sakecontrol.pl/",
-        "description": "Monitoring uptime dla wszystkich Twoich projektów: strony, bazy, serwery, porty TCP i certyfikaty SSL. Sprawdzenia w chmurze co minutę i alerty email w kilka sekund.",
-        "inLanguage": ["pl", "en", "ru"],
-        "offers": [
-          { "@type": "Offer", "name": "Pro", "price": "7", "priceCurrency": "USD", "description": "$7/mo or $75/yr, 7-day free trial" }
-        ],
-        "publisher": { "@type": "Organization", "name": "DBDC Studio" }
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://sakecontrol.pl/#org",
+            "name": "DBDC Studio",
+            "url": "https://sakecontrol.pl/",
+            "logo": "https://sakecontrol.pl/logo.png",
+            "email": "dbdcstudio@gmail.com"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://sakecontrol.pl/#website",
+            "name": "SAKE Control System",
+            "alternateName": "Sake Control",
+            "url": "https://sakecontrol.pl/",
+            "inLanguage": "pl",
+            "publisher": { "@id": "https://sakecontrol.pl/#org" }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://sakecontrol.pl/#app",
+            "name": "SAKE Control System",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Web, Android, iOS",
+            "url": "https://sakecontrol.pl/",
+            "image": "https://sakecontrol.pl/og-image.png",
+            "description": "Monitoring uptime dla wszystkich Twoich projektów: strony, bazy, serwery, porty TCP i certyfikaty SSL. Sprawdzenia w chmurze co minutę i alerty email w kilka sekund.",
+            "inLanguage": ["pl", "en", "ru"],
+            "offers": [
+              { "@type": "Offer", "name": "Pro — miesięcznie", "price": "7", "priceCurrency": "USD", "url": "https://sakecontrol.pl/#pricing", "description": "7-dniowy darmowy okres próbny, bez karty" },
+              { "@type": "Offer", "name": "Pro — rocznie", "price": "75", "priceCurrency": "USD", "url": "https://sakecontrol.pl/#pricing", "description": "7-dniowy darmowy okres próbny, bez karty" }
+            ],
+            "publisher": { "@id": "https://sakecontrol.pl/#org" }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://sakecontrol.pl/#faq",
+            "inLanguage": "pl",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Co dokładnie sprawdza SAKE?",
+                "acceptedAnswer": { "@type": "Answer", "text": "HTTP(S), port TCP, certyfikat SSL, obecność słowa kluczowego i health Supabase. Wkrótce — ping ICMP przez agenta." }
+              },
+              {
+                "@type": "Question",
+                "name": "Jak często idą sprawdzenia?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Co minutę — to domyślna wartość dla każdego monitora. Interwał można wydłużyć dla wybranego monitora." }
+              },
+              {
+                "@type": "Question",
+                "name": "A jeśli padnie samo SAKE?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Sprawdzenia i maile żyją w chmurze, niezależnie od Twojej i naszej infrastruktury biurowej — to zasada „stróż pewniejszy niż pilnowane”." }
+              },
+              {
+                "@type": "Question",
+                "name": "Do kogo trafiają maile?",
+                "acceptedAnswer": { "@type": "Answer", "text": "Na adres przypisany do projektu i adresy kont z dostępem — lista jest edytowalna." }
+              },
+              {
+                "@type": "Question",
+                "name": "Jak działa okres próbny?",
+                "acceptedAnswer": { "@type": "Answer", "text": "7 dni pełnego dostępu za darmo i bez karty. Potem $7/mies lub $75/rok. Możesz anulować w każdej chwili." }
+              }
+            ]
+          }
+        ]
       }
     </script>
 
