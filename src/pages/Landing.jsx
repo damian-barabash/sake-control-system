@@ -468,7 +468,7 @@ function SupabaseLogo({ className = 'h-8 w-8' }) {
 
 function KeepAliveCard({ lang }) {
   const K = dict(lang).landing.keepalive.card
-  const pingDays = [1, 4, 7]
+  const pingDays = [1, 2, 3, 4, 5, 6, 7]
   return (
     <div className="relative mx-auto w-full max-w-md">
       <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-[radial-gradient(60%_50%_at_50%_35%,rgba(62,207,142,0.22)_0%,rgba(62,207,142,0)_70%)]" />

@@ -16,6 +16,16 @@
 //   * Push that actually arrives: hybrid FCM payload (system notification as the
 //     guaranteed floor + data for the app to upgrade into the looping alarm),
 //     repeats until acknowledged, and every attempt lands in notification_log.
+//
+// v13 (2026-11-23) — audit fixes:
+//   * Keep-alive touches TWO services that both read Postgres (Storage and
+//     PostgREST via /graphql/v1), every 12 h instead of 24 h. A Storage hiccup
+//     on a live project is no longer reported as "down".
+//   * Keep-alive that silently stopped working (rejected key, failing request)
+//     now emails the project's recipients once it is 48 h stale.
+//   * Correlated failures: when several monitors time out in the same cycle the
+//     likeliest cause is the checker's own network path, so those need more
+//     consecutive failed cycles before anyone is woken up.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
@@ -33,9 +43,17 @@ const FAIL_THRESHOLD = 2 // consecutive failed cycles before an incident opens
 const CONCURRENCY = 8 // parallel checks per invocation
 const BATCH_LIMIT = 100
 // Authed keep-alive ping cadence for supabase monitors with an anon key.
-// Supabase pauses idle free projects; a daily authenticated request is cheap
-// and leaves no room for the counter to creep up on us.
-const KEEPALIVE_MS = 24 * 3600 * 1000
+// Supabase pauses free projects after 7 idle days; an authenticated request
+// twice a day is cheap and leaves no room for the counter to creep up on us.
+const KEEPALIVE_MS = 12 * 3600 * 1000
+// No successful keep-alive for this long → tell a human (re-alert daily).
+const KEEPALIVE_STALE_MS = 48 * 3600 * 1000
+const KEEPALIVE_REALERT_MS = 24 * 3600 * 1000
+// This many transport-level failures (no HTTP answer at all) in ONE cycle is
+// treated as correlated — most likely our own network path, not N outages at
+// once — and those monitors need more failed cycles before an incident opens.
+const CORRELATED_MIN = 3
+const CORRELATED_THRESHOLD = 4
 // Alarm repeats: every cycle early on, then slower; give up after a day so a
 // permanently dead target doesn't ring forever.
 const REPEAT_FAST_COUNT = 15
@@ -127,35 +145,72 @@ async function httpCheck(m: any, opts: { keyword?: boolean; reachable?: boolean 
   }
 }
 
-// Authenticated Supabase ping: a real API request with the project's anon key.
-// Counts as project activity, so free-plan projects don't get auto-paused (keep-alive),
-// and proves the API actually answers — not just that the Kong gateway is reachable.
-// Endpoint: /storage/v1/bucket — returns 200 to anon and actually reads Postgres
-// (storage.buckets under RLS). The PostgREST root /rest/v1/ is service_role-only now.
-// Fired only when due (every KEEPALIVE_MS); other cycles run the plain gateway check.
-async function supabaseAuthedCheck(base: string, m: any): Promise<Result> {
-  const t0 = performance.now()
-  const headers = { apikey: m.anon_key, Authorization: `Bearer ${m.anon_key}`, 'user-agent': 'SakeControl/1.0' }
+// Authenticated Supabase keep-alive: real API requests with the project's anon
+// key. They count as project activity, so free-plan projects don't get
+// auto-paused, and they prove the API answers — not just that the Kong gateway
+// is reachable. Two independent services, both of which read Postgres:
+//   * Storage   GET  /storage/v1/bucket  → 200, reads storage.buckets under RLS
+//   * PostgREST POST /graphql/v1         → 200, runs graphql_public.graphql()
+// (the PostgREST root /rest/v1/ is service_role-only now, so it is not usable).
+// Fired only when due (every KEEPALIVE_MS); other cycles run the gateway check.
+async function touch(url: string, init: RequestInit, timeout: number): Promise<{ code: number | null; error: string | null }> {
   try {
-    const res = await raceTimeout(
-      fetch(`${base}/storage/v1/bucket`, { headers }),
-      m.timeout_ms || 10000,
-    )
+    const res = await raceTimeout(fetch(url, init), timeout)
     try { await res.body?.cancel() } catch { /* ignore */ }
-    // best-effort second touch on the Auth API so activity shows on more services
-    fetch(`${base}/auth/v1/health`, { headers }).then((r) => r.body?.cancel()).catch(() => {})
-    const latency = Math.round(performance.now() - t0)
-    const code = res.status
-    if (code === 401 || code === 403) {
-      // gateway alive but the key is wrong → the request never reaches the DB,
-      // so keep-alive is NOT working; surface it without a false "down" alert.
-      // Not stamped, so it retries every cycle until the key is fixed.
-      return { status: 'degraded', code, latency, error: 'anon key rejected — keep-alive inactive', keepalive: false }
-    }
-    if (code >= 500) return { status: 'down', code, latency, error: `HTTP ${code}`, keepalive: false }
-    return { status: latency > DEGRADED_MS ? 'degraded' : 'up', code, latency, error: null, keepalive: true }
+    return { code: res.status, error: null }
   } catch (e) {
-    return { status: 'down', code: null, latency: null, error: String((e as any)?.message ?? e), keepalive: false }
+    return { code: null, error: String((e as any)?.message ?? e) }
+  }
+}
+
+async function supabaseAuthedCheck(base: string, m: any): Promise<Result> {
+  const headers = { apikey: m.anon_key, Authorization: `Bearer ${m.anon_key}`, 'user-agent': 'SakeControl/1.0' }
+  const t0 = performance.now()
+  const storage = await touch(`${base}/storage/v1/bucket`, { headers }, m.timeout_ms || 10000)
+  const latency = Math.round(performance.now() - t0)
+
+  if (storage.code === 401 || storage.code === 403) {
+    // gateway alive but the key is wrong → the request never reaches the DB,
+    // so keep-alive is NOT working; surface it without a false "down" alert.
+    // Not stamped, so it retries every cycle until the key is fixed, and the
+    // keep-alive watch emails the owner once it has been stale for 48 h.
+    return { status: 'degraded', code: storage.code, latency, error: 'anon key rejected — keep-alive inactive', keepalive: false }
+  }
+
+  // second, independent touch (PostgREST → Postgres) + a best-effort Auth hit
+  const [gql] = await Promise.all([
+    touch(`${base}/graphql/v1`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: '{"query":"{ __typename }"}',
+    }, 6000),
+    touch(`${base}/auth/v1/health`, { headers }, 6000),
+  ])
+
+  const storageOk = storage.code !== null && storage.code >= 200 && storage.code < 300
+  const gqlOk = gql.code === 200
+  if (storageOk || gqlOk) {
+    return {
+      status: latency > DEGRADED_MS ? 'degraded' : 'up',
+      code: storageOk ? storage.code : gql.code,
+      latency,
+      error: null,
+      keepalive: true,
+      note: storageOk && gqlOk ? null : `keep-alive: ${storageOk ? 'storage' : 'graphql'} ok, ${storageOk ? 'graphql' : 'storage'} не ответил`,
+    }
+  }
+
+  // Neither request reached the database. Before calling the whole project
+  // down, ask the gateway: a Storage outage on a live project is not an outage.
+  const why = storage.code !== null ? `HTTP ${storage.code}` : (storage.error ?? 'нет ответа')
+  const gw = await httpCheck({ ...m, target: `${base}/auth/v1/health`, method: 'GET', expected_status: null }, { reachable: true })
+  if (gw.status === 'down') return { ...gw, keepalive: false }
+  return {
+    status: 'degraded',
+    code: gw.code,
+    latency: gw.latency,
+    error: `keep-alive не прошёл (${why}) — проект отвечает, повтор в следующем цикле`,
+    keepalive: false,
   }
 }
 
@@ -300,10 +355,10 @@ async function reliableCheck(m: any): Promise<Result> {
 }
 
 // ---- email ----
-function emailHtml(opts: { down: boolean; project: string; monitor: string; target: string; detail: string }) {
+function emailHtml(opts: { down: boolean; project: string; monitor: string; target: string; detail: string; tag?: string; color?: string }) {
   const { down, project, monitor, target, detail } = opts
-  const color = down ? '#E2564A' : '#34C77F'
-  const tag = down ? 'НЕ РАБОТАЕТ' : 'ВОССТАНОВЛЕН'
+  const color = opts.color ?? (down ? '#E2564A' : '#34C77F')
+  const tag = opts.tag ?? (down ? 'НЕ РАБОТАЕТ' : 'ВОССТАНОВЛЕН')
   return `<div style="font-family:Inter,Arial,sans-serif;background:#0A0C0B;color:#EBF1ED;padding:32px">
     <div style="max-width:520px;margin:0 auto;border:1px solid #242B26;border-radius:14px;background:#121613;padding:28px">
       <div style="font:600 12px/1 monospace;letter-spacing:.2em;text-transform:uppercase;color:${color}">Sake Control · ${tag}</div>
@@ -601,8 +656,13 @@ async function repeatUnacked(admin: any) {
   }
 }
 
-async function processMonitor(admin: any, m: any, opts: { bumpNextRun?: boolean } = {}) {
-  const res = await reliableCheck(m)
+async function processMonitor(
+  admin: any,
+  m: any,
+  opts: { bumpNextRun?: boolean; res?: Result; failThreshold?: number } = {},
+) {
+  const res = opts.res ?? await reliableCheck(m)
+  const failThreshold = opts.failThreshold ?? FAIL_THRESHOLD
   const now = new Date()
 
   await admin.from('checks').insert({
@@ -644,7 +704,10 @@ async function processMonitor(admin: any, m: any, opts: { bumpNextRun?: boolean 
   // the scheduler path already claimed (and advanced) next_run_at atomically
   if (opts.bumpNextRun) patch.next_run_at = new Date(Date.now() + (m.interval_seconds || 60) * 1000).toISOString()
   // stamp only when the authed ping actually landed, so failures retry next cycle
-  if (res.keepalive) patch.last_keepalive_at = now.toISOString()
+  if (res.keepalive) {
+    patch.last_keepalive_at = now.toISOString()
+    patch.keepalive_alerted_at = null // healthy again → the stale alert re-arms
+  }
   if (Object.keys(patch).length) await admin.from('monitors').update(patch).eq('id', m.id)
 
   // incident transitions
@@ -655,7 +718,7 @@ async function processMonitor(admin: any, m: any, opts: { bumpNextRun?: boolean 
     .eq('status', 'open')
     .maybeSingle()
 
-  if (res.status === 'down' && !openInc && consecutive >= FAIL_THRESHOLD) {
+  if (res.status === 'down' && !openInc && consecutive >= failThreshold) {
     const { data: inc } = await admin
       .from('incidents')
       .insert({ monitor_id: m.id, status: 'open', cause: res.error, notified_open: true, last_notified_at: now.toISOString() })
@@ -698,6 +761,61 @@ async function processMonitor(admin: any, m: any, opts: { bumpNextRun?: boolean 
   }
 
   return { monitor: m.name, status: res.status, note: res.note ?? undefined }
+}
+
+/// Keep-alive that quietly stopped working is the one failure this feature
+/// cannot afford: nothing looks wrong until the project is paused a week later.
+/// A rejected key or a failing request only turns the monitor yellow, so this
+/// watch emails the project's recipients once keep-alive is 48 h stale, and
+/// again every 24 h until it lands. A monitor that is plainly down is skipped —
+/// the incident alarm already covers it.
+async function keepaliveWatch(admin: any, opts: { dryRun?: boolean; staleMs?: number } = {}) {
+  const staleMs = opts.staleMs ?? KEEPALIVE_STALE_MS
+  const { data: mons, error } = await admin
+    .from('monitors')
+    .select('id, name, target, project_id, anon_key, created_at, last_keepalive_at, keepalive_alerted_at, monitor_state(status, last_error)')
+    .eq('type', 'supabase')
+    .eq('enabled', true)
+    .not('anon_key', 'is', null)
+  if (error) throw new Error(error.message)
+  const out: any[] = []
+  for (const m of mons ?? []) {
+    if (!m.anon_key) continue
+    const st = Array.isArray(m.monitor_state) ? m.monitor_state[0] : m.monitor_state
+    const since = new Date(m.last_keepalive_at ?? m.created_at).getTime()
+    const staleFor = Date.now() - since
+    if (staleFor < staleMs) continue
+    const down = st?.status === 'down'
+    const alertedRecently = m.keepalive_alerted_at &&
+      Date.now() - new Date(m.keepalive_alerted_at).getTime() < KEEPALIVE_REALERT_MS
+    const hours = Math.floor(staleFor / 3600000)
+    const willAlert = !down && !alertedRecently
+    out.push({ monitor: m.name, last_keepalive_at: m.last_keepalive_at, stale_hours: hours, down, alert: willAlert })
+    if (opts.dryRun || !willAlert) continue
+
+    const { data: project } = await admin.from('projects').select('*').eq('id', m.project_id).maybeSingle()
+    if (!project) continue
+    const to = await recipientsFor(admin, project)
+    const reason = st?.last_error || 'запрос keep-alive не проходит'
+    await sendEmail(
+      admin,
+      { monitorId: m.id, incidentId: null, kind: 'keepalive' },
+      to,
+      `🟡 ${project.name} · ${m.name}: keep-alive не работает ${hours} ч`,
+      emailHtml({
+        down: true,
+        tag: 'KEEP-ALIVE НЕ РАБОТАЕТ',
+        color: '#E3B341',
+        project: project.name,
+        monitor: m.name,
+        target: m.target,
+        detail: `Последний успешный keep-alive был ${hours} ч назад. Причина: ${reason}. ` +
+          `Supabase ставит бесплатный проект на паузу после 7 дней без активности — проверьте anon-ключ монитора.`,
+      }),
+    )
+    await admin.from('monitors').update({ keepalive_alerted_at: new Date().toISOString() }).eq('id', m.id)
+  }
+  return out
 }
 
 /// Fires a real alarm push at the caller's own devices, so "are notifications
@@ -806,14 +924,49 @@ Deno.serve(async (req) => {
     return json({ ok: true, credentials: 'ok', project: auth.projectId, devices: checked }, 200, origin)
   }
 
+  // Ops dry run: which monitors does the keep-alive watch consider stale right
+  // now? Sends nothing. `stale_hours` overrides the 48 h bar for inspection.
+  if (body?.keepalive_watch_dryrun) {
+    try {
+      const hrs = Number(body.stale_hours)
+      const list = await keepaliveWatch(admin, { dryRun: true, staleMs: hrs > 0 ? hrs * 3600000 : undefined })
+      return json({ ok: true, stale: list }, 200, origin)
+    } catch (e) {
+      return json({ ok: false, error: String((e as any)?.message ?? e) }, 200, origin)
+    }
+  }
+
   // Claim atomically: overlapping invocations get disjoint batches, so a check
   // that runs long can never be duplicated by the next minute's cron tick.
   const { data: due, error: claimErr } = await admin.rpc('claim_due_monitors', { p_limit: BATCH_LIMIT })
   if (claimErr) return json({ error: `claim failed: ${claimErr.message}` }, 500, origin)
 
-  const results = await pool(due ?? [], CONCURRENCY, async (m: any) => {
+  // Phase 1 — probe everything first, so the verdicts can be read TOGETHER.
+  const batch: any[] = due ?? []
+  const probed = await pool(batch, CONCURRENCY, async (m: any): Promise<Result | { failed: string }> => {
     try {
-      return await processMonitor(admin, m)
+      return await reliableCheck(m)
+    } catch (e) {
+      return { failed: String((e as any)?.message ?? e) }
+    }
+  })
+
+  // A transport-level failure = no HTTP answer at all (timeout, reset, refused).
+  // NXDOMAIN is excluded: that verdict is already confirmed by public resolvers.
+  const isTransportDown = (r: any) =>
+    r && !r.failed && r.status === 'down' && r.code === null && !/NXDOMAIN/.test(r.error ?? '')
+  const transportDown = probed.filter(isTransportDown).length
+  const correlated = transportDown >= CORRELATED_MIN
+
+  // Phase 2 — record results and run incident logic.
+  const results = await pool(batch.map((m, i) => ({ m, r: probed[i] })), CONCURRENCY, async ({ m, r }: any) => {
+    if (r.failed) return { monitor: m.name, error: r.failed }
+    try {
+      const suspect = correlated && isTransportDown(r)
+      const res: Result = suspect
+        ? { ...r, note: `одновременно не ответили ${transportDown} монитора(ов) — возможен сбой сети проверяющего; аларм после ${CORRELATED_THRESHOLD} циклов подряд` }
+        : r
+      return await processMonitor(admin, m, { res, failThreshold: suspect ? CORRELATED_THRESHOLD : FAIL_THRESHOLD })
     } catch (e) {
       return { monitor: m.name, error: String((e as any)?.message ?? e) }
     }
@@ -821,5 +974,14 @@ Deno.serve(async (req) => {
 
   try { await repeatUnacked(admin) } catch { /* best-effort */ }
 
-  return json({ ok: true, checked: results.length, results }, 200, origin)
+  let keepalive: any[] = []
+  try { keepalive = await keepaliveWatch(admin) } catch { /* best-effort */ }
+
+  return json({
+    ok: true,
+    checked: results.length,
+    correlated: correlated ? transportDown : 0,
+    keepalive_stale: keepalive.length,
+    results,
+  }, 200, origin)
 })
