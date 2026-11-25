@@ -895,6 +895,18 @@ export default function Landing() {
             </div>
             <span className="text-[12px] text-faint">© MMXXVI · {L.footer.rights}</span>
           </div>
+          <div className="mx-auto mt-8 max-w-6xl border-t border-line px-5 pt-6 text-center text-[12px] leading-relaxed text-faint">
+            <p>
+              {L.footer.madeBy}{' '}
+              <a href="https://dbdcstudio.pl/" target="_blank" rel="noopener" className="text-muted underline-offset-4 transition-colors hover:text-ink hover:underline">DBDC Studio</a>
+              {' · '}
+              {L.footer.contact}:{' '}
+              <a href="mailto:dbdcstudio@gmail.com" className="text-muted underline-offset-4 transition-colors hover:text-ink hover:underline">dbdcstudio@gmail.com</a>
+            </p>
+            <p className="mt-2">
+              {L.footer.operator}: Maksym Yehorov Maksikon · ul. Zamiany 18 lok. 46, 02-786 Warszawa · NIP: 9512594289 · REGON: 528375783
+            </p>
+          </div>
         </footer>
       </div>
 

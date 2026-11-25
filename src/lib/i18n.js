@@ -220,7 +220,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Перестаньте узнавать о сбоях от клиентов', sub: 'Поднимите свой первый монитор за пару минут.', button: 'Создать аккаунт' },
-      footer: { tagline: 'Облако, которое не спит.', rights: 'Часть экосистемы DBDC Studio', privacy: 'Политика конфиденциальности', refund: 'Политика возвратов', cookies: 'Cookies', contact: 'Контакт' },
+      footer: { tagline: 'Облако, которое не спит.', rights: 'Часть экосистемы DBDC Studio', privacy: 'Политика конфиденциальности', refund: 'Политика возвратов', cookies: 'Cookies', contact: 'Контакт', madeBy: 'Сделано', operator: 'Данные обслуживает фирма' },
     },
     topbar: { lang: 'Язык', signout: 'Выйти', admin: 'admin', projects: 'Проекты', users: 'Пользователи', inquiries: 'Заявки', menu: 'Меню', account: 'Аккаунт' },
     overview: {
@@ -530,7 +530,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Przestań dowiadywać się o awariach od klientów', sub: 'Postaw pierwszy monitor w kilka minut.', button: 'Utwórz konto' },
-      footer: { tagline: 'Chmura, która nie śpi.', rights: 'Część ekosystemu DBDC Studio', privacy: 'Polityka prywatności', refund: 'Polityka zwrotów', cookies: 'Cookies', contact: 'Kontakt' },
+      footer: { tagline: 'Chmura, która nie śpi.', rights: 'Część ekosystemu DBDC Studio', privacy: 'Polityka prywatności', refund: 'Polityka zwrotów', cookies: 'Cookies', contact: 'Kontakt', madeBy: 'Stworzone przez', operator: 'Dane obsługuje firma' },
     },
     topbar: { lang: 'Język', signout: 'Wyloguj', admin: 'admin', projects: 'Projekty', users: 'Użytkownicy', inquiries: 'Zgłoszenia', menu: 'Menu', account: 'Konto' },
     overview: {
@@ -840,7 +840,7 @@ const DICT = {
         ],
       },
       finalCta: { title: 'Stop hearing about outages from your customers', sub: 'Bring up your first monitor in a couple of minutes.', button: 'Create account' },
-      footer: { tagline: 'A cloud that never sleeps.', rights: 'Part of the DBDC Studio ecosystem', privacy: 'Privacy Policy', refund: 'Refund Policy', cookies: 'Cookies', contact: 'Contact' },
+      footer: { tagline: 'A cloud that never sleeps.', rights: 'Part of the DBDC Studio ecosystem', privacy: 'Privacy Policy', refund: 'Refund Policy', cookies: 'Cookies', contact: 'Contact', madeBy: 'Made by', operator: 'Data is handled by the company' },
     },
     topbar: { lang: 'Language', signout: 'Sign out', admin: 'admin', projects: 'Projects', users: 'Users', inquiries: 'Inquiries', menu: 'Menu', account: 'Account' },
     overview: {
